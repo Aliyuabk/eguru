@@ -1,4 +1,4 @@
-package com.example.electionguru_new
+package com.example.election_guru
 
 import io.flutter.embedding.android.FlutterActivity
 
