@@ -1,43 +1,86 @@
-name: election_guru
-description: "Election Management System Mobile App"
-publish_to: 'none'
+name: election_monitor_app
+description: A comprehensive election monitoring mobile application
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.8.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
   
-  # UI & Utilities
-  provider: ^6.1.1
-  shared_preferences: ^2.2.3
-  intl: ^0.19.0
+  # UI & Design
+  flutter_svg: ^2.0.9
+  google_fonts: ^6.1.0
+  shimmer: ^3.0.0
+  flutter_staggered_animations: ^1.1.1
+  
+  # State Management
+  provider: ^6.0.5
   
   # Networking
-  http: ^1.2.1
-  connectivity_plus: ^5.0.2
+  dio: ^5.3.2
+  retrofit: ^4.0.1
+  json_annotation: ^4.8.1
+  
+  # Local Storage
+  shared_preferences: ^2.2.2
+  sqflite: ^2.3.0
+  hive_flutter: ^1.1.0
+  
+  # Authentication
+  local_auth: ^2.1.6
   
   # Location & Maps
   geolocator: ^10.1.0
+  geocoding: ^2.1.1
   
   # Camera & Media
-  image_picker: ^1.0.7
+  camera: ^0.10.5
+  image_picker: ^1.0.4
+  file_picker: ^5.5.0
+  video_player: ^2.7.2
+  # RECORD_AUDIO_PLUGIN - Using record package instead
+  record: ^5.0.0
+  audio_waveforms: ^1.0.0
   
-  # Storage
-  path_provider: ^2.1.2
+  # Chat
+  agora_rtc_engine: ^6.2.0
   
-  # Biometrics
-  local_auth: ^2.1.8
+  # # Push Notifications
+  # firebase_messaging: ^14.6.5
+  # flutter_local_notifications: ^15.1.1
+  
+  # Utilities
+  intl: ^0.18.1
+  connectivity_plus: ^5.0.1
+  package_info_plus: ^4.2.0
+  device_info_plus: ^9.1.0
+  
+  # Security
+  flutter_secure_storage: ^9.0.0
+  crypto: ^3.0.3
+  
+  # UI Components
+  fluttertoast: ^8.2.2
+  modal_progress_hud_nsn: ^0.4.0
+  pull_to_refresh: ^2.0.0
+  cached_network_image: ^3.3.0
+  photo_view: ^0.14.0
+  flutter_rating_bar: ^4.0.1
+  permission_handler: ^11.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  build_runner: ^2.4.6
+  json_serializable: ^6.7.1
+  flutter_lints: ^2.0.0
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/images/
-    - assets/fonts/
+  
+  # assets:
+  #   - assets/images/
+  #   - assets/fonts/
+  #   - assets/icons/

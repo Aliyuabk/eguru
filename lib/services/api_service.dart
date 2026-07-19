@@ -1,113 +1,304 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../core/constants/api_constants.dart';
+import '../models/user_model.dart';
+import '../models/election_model.dart';
+import '../models/incident_model.dart';
+import '../models/chat_model.dart';
 
 class ApiService {
-  // CORRECTED URL - note the spelling
-  static const String baseUrl = 'https://eguruelction.kowagurutech.ng/api/endpoints';
+  final Dio _dio;
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
   
-  static Map<String, String> getHeaders({String? token}) {
-    final headers = {
+  ApiService() : _dio = Dio(BaseOptions(
+    baseUrl: ApiConstants.baseUrl,
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(seconds: 30),
+    headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-    };
-    
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-    
-    return headers;
+    },
+  )) {
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = await _storage.read(key: 'auth_token');
+        if (token != null) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+        return handler.next(options);
+      },
+      onError: (error, handler) async {
+        if (error.response?.statusCode == 401) {
+          await _storage.delete(key: 'auth_token');
+          await _storage.delete(key: 'user_data');
+        }
+        return handler.next(error);
+      },
+    ));
   }
-
-  static Future<Map<String, dynamic>> login(String email, String password) async {
+  
+  // Auth APIs
+  Future<LoginResponse> login(String email, String password) async {
     try {
-      final url = Uri.parse('$baseUrl/auth/login.php');
-      print('🔗 Attempting to connect to: $url');
-      
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({
+      final response = await _dio.post(
+        ApiConstants.login,
+        data: {
           'email': email,
           'password': password,
-          'device_id': await _getDeviceId(),
-        }),
-      ).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          throw Exception('Connection timeout. Please check your internet connection.');
         },
       );
       
-      print('📡 Response status: ${response.statusCode}');
-      print('📡 Response body: ${response.body}');
-      
-      final data = jsonDecode(response.body);
-      
-      if (response.statusCode == 200 && data['success'] == true) {
-        await _saveAuthData(data['token'], data['user']);
-        return data;
+      if (response.data['success'] == true) {
+        final user = User.fromJson(response.data['user']);
+        final token = response.data['token'];
+        await _storage.write(key: 'auth_token', value: token);
+        await _storage.write(key: 'user_data', value: response.data['user'].toString());
+        return LoginResponse(
+          success: true,
+          user: user,
+          token: token,
+        );
       } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Login failed. Please check your credentials.'
-        };
+        return LoginResponse(
+          success: false,
+          message: response.data['message'] ?? 'Login failed',
+        );
       }
-    } on http.ClientException catch (e) {
-      print('❌ Client Exception: $e');
-      return {
-        'success': false,
-        'message': 'Cannot connect to server. Please check your internet connection.'
-      };
+    } on DioException catch (e) {
+      if (e.response != null) {
+        return LoginResponse(
+          success: false,
+          message: e.response?.data['message'] ?? 'Login failed',
+        );
+      } else {
+        return LoginResponse(
+          success: false,
+          message: 'Network error. Please check your connection.',
+        );
+      }
+    }
+  }
+  
+  Future<void> logout() async {
+    await _storage.delete(key: 'auth_token');
+    await _storage.delete(key: 'user_data');
+  }
+  
+  Future<ForgotPasswordResponse> forgotPassword(String email) async {
+    try {
+      final response = await _dio.post(
+        ApiConstants.forgotPassword,
+        data: {'email': email},
+      );
+      
+      return ForgotPasswordResponse(
+        success: response.data['success'] ?? false,
+        message: response.data['message'],
+      );
+    } on DioException catch (e) {
+      return ForgotPasswordResponse(
+        success: false,
+        message: e.response?.data['message'] ?? 'Request failed',
+      );
+    }
+  }
+  
+  Future<bool> changePassword(String currentPassword, String newPassword) async {
+    try {
+      final response = await _dio.post(
+        ApiConstants.changePassword,
+        data: {
+          'current_password': currentPassword,
+          'new_password': newPassword,
+        },
+      );
+      
+      return response.data['success'] ?? false;
     } catch (e) {
-      print('❌ Unexpected error: $e');
-      return {
-        'success': false,
-        'message': 'Error: ${e.toString()}'
-      };
+      return false;
     }
   }
-
-  static Future<Map<String, dynamic>?> getUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString('user_data');
-    if (userJson != null) {
-      try {
-        return jsonDecode(userJson);
-      } catch (e) {
-        return null;
+  
+  // Election APIs
+  Future<List<Election>> getElections() async {
+    try {
+      final response = await _dio.get(ApiConstants.elections);
+      if (response.data['success'] == true) {
+        final List<dynamic> data = response.data['elections'];
+        return data.map((json) => Election.fromJson(json)).toList();
       }
+      return [];
+    } catch (e) {
+      return [];
     }
-    return null;
   }
-
-  static Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('auth_token');
-  }
-
-  static Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('user_data');
-  }
-
-  static Future<void> _saveAuthData(String token, Map<String, dynamic> user) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
-    await prefs.setString('user_data', jsonEncode(user));
-  }
-
-  static Future<String> _getDeviceId() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? deviceId = prefs.getString('device_id');
-    if (deviceId == null) {
-      deviceId = 'device_${DateTime.now().millisecondsSinceEpoch}';
-      await prefs.setString('device_id', deviceId);
+  
+  Future<Election?> getElection(int id) async {
+    try {
+      final response = await _dio.get('${ApiConstants.elections}/$id');
+      if (response.data['success'] == true) {
+        return Election.fromJson(response.data['election']);
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
-    return deviceId;
+  }
+  
+  // Polling Unit APIs
+  Future<PollingUnit?> getPollingUnit(int id) async {
+    try {
+      final response = await _dio.get('${ApiConstants.pollingUnits}/$id');
+      if (response.data['success'] == true) {
+        return PollingUnit.fromJson(response.data['polling_unit']);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  // Checklist APIs
+  Future<Checklist?> getChecklist(int electionId, int puId) async {
+    try {
+      final response = await _dio.get(
+        ApiConstants.checklist,
+        queryParameters: {
+          'election_id': electionId,
+          'pu_id': puId,
+        },
+      );
+      if (response.data['success'] == true) {
+        return Checklist.fromJson(response.data['checklist']);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  Future<bool> updateChecklist(Checklist checklist) async {
+    try {
+      final response = await _dio.post(
+        ApiConstants.updateChecklist,
+        data: checklist.toJson(),
+      );
+      return response.data['success'] ?? false;
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  // Incident APIs
+  Future<List<Incident>> getIncidents() async {
+    try {
+      final response = await _dio.get(ApiConstants.incidents);
+      if (response.data['success'] == true) {
+        final List<dynamic> data = response.data['incidents'];
+        return data.map((json) => Incident.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+  
+  Future<Incident?> createIncident(Incident incident) async {
+    try {
+      final response = await _dio.post(
+        ApiConstants.createIncident,
+        data: incident.toJson(),
+      );
+      if (response.data['success'] == true) {
+        return Incident.fromJson(response.data['incident']);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  Future<bool> updateIncident(Incident incident) async {
+    try {
+      final response = await _dio.put(
+        '${ApiConstants.incidents}/${incident.id}',
+        data: incident.toJson(),
+      );
+      return response.data['success'] ?? false;
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  // Chat APIs
+  Future<List<ChatRoom>> getChatRooms() async {
+    try {
+      final response = await _dio.get(ApiConstants.chatRooms);
+      if (response.data['success'] == true) {
+        final List<dynamic> data = response.data['rooms'];
+        return data.map((json) => ChatRoom.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+  
+  Future<List<ChatMessage>> getMessages(int roomId) async {
+    try {
+      final response = await _dio.get(
+        '${ApiConstants.chatRooms}/$roomId/messages',
+      );
+      if (response.data['success'] == true) {
+        final List<dynamic> data = response.data['messages'];
+        return data.map((json) => ChatMessage.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+  
+  Future<ChatMessage?> sendMessage(int roomId, String content, String type) async {
+    try {
+      final response = await _dio.post(
+        '${ApiConstants.chatRooms}/$roomId/messages',
+        data: {
+          'content': content,
+          'message_type': type,
+        },
+      );
+      if (response.data['success'] == true) {
+        return ChatMessage.fromJson(response.data['message']);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  // Media Upload APIs
+  Future<String?> uploadMedia(String filePath, String type) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath),
+        'type': type,
+      });
+      
+      final response = await _dio.post(
+        ApiConstants.uploadMedia,
+        data: formData,
+        options: Options(
+          headers: {'Content-Type': 'multipart/form-data'},
+        ),
+      );
+      
+      if (response.data['success'] == true) {
+        return response.data['url'];
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
 }

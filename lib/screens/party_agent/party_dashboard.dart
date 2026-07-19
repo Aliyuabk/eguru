@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/status_card.dart';
+import 'party_observations.dart';
+import 'party_evidence.dart';
 
-class ObserverDashboardScreen extends StatefulWidget {
-  const ObserverDashboardScreen({super.key});
+class PartyDashboardScreen extends StatefulWidget {
+  const PartyDashboardScreen({super.key});
 
   @override
-  State<ObserverDashboardScreen> createState() => _ObserverDashboardScreenState();
+  State<PartyDashboardScreen> createState() => _PartyDashboardScreenState();
 }
 
-class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
+class _PartyDashboardScreenState extends State<PartyDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Observer Dashboard'),
+        title: const Text('Party Agent Dashboard'),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
@@ -29,7 +31,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF7C3AED), Color(0xFF5B21B6)],
+                  colors: [Color(0xFFDC2626), Color(0xFFB91C1C)],
                 ),
                 borderRadius: BorderRadius.circular(AppColors.radius),
               ),
@@ -37,7 +39,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Welcome, Observer!',
+                    'Welcome, Party Agent!',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -46,7 +48,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Election Monitoring • 2027 Governorship',
+                    'All Progressive Congress • APC',
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 14,
@@ -72,7 +74,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                 Expanded(
                   child: StatusCard(
                     title: 'Observations',
-                    value: '12',
+                    value: '8',
                     icon: Icons.visibility,
                     color: Colors.purple,
                   ),
@@ -81,7 +83,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                 Expanded(
                   child: StatusCard(
                     title: 'Incidents',
-                    value: '3',
+                    value: '2',
                     icon: Icons.warning,
                     color: AppColors.danger,
                   ),
@@ -95,8 +97,8 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
               children: [
                 Expanded(
                   child: StatusCard(
-                    title: 'Media',
-                    value: '24',
+                    title: 'Evidence',
+                    value: '15',
                     icon: Icons.photo_library,
                     color: AppColors.info,
                   ),
@@ -104,9 +106,9 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: StatusCard(
-                    title: 'Reports',
+                    title: 'Messages',
                     value: '5',
-                    icon: Icons.assessment,
+                    icon: Icons.message,
                     color: AppColors.secondary,
                   ),
                 ),
@@ -134,7 +136,25 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                   Icons.visibility,
                   Colors.purple,
                   () {
-                    // Navigate to observations
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PartyObservationsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildQuickAction(
+                  'Evidence',
+                  Icons.photo_library,
+                  AppColors.info,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PartyEvidenceScreen(),
+                      ),
+                    );
                   },
                 ),
                 _buildQuickAction(
@@ -143,14 +163,6 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                   AppColors.danger,
                   () {
                     // Navigate to incident report
-                  },
-                ),
-                _buildQuickAction(
-                  'Upload Media',
-                  Icons.photo_camera,
-                  AppColors.info,
-                  () {
-                    // Navigate to media upload
                   },
                 ),
                 _buildQuickAction(
