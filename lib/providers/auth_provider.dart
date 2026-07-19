@@ -25,6 +25,12 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
   
+  // Add this method for test login
+  void setUser(User user) {
+    _user = user;
+    notifyListeners();
+  }
+  
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     _error = null;
@@ -36,6 +42,7 @@ class AuthProvider extends ChangeNotifier {
       if (response.success && response.user != null) {
         _user = response.user;
         await _authService.saveUser(_user!);
+        await _authService.saveToken(response.token ?? '');
         _isLoading = false;
         notifyListeners();
         return true;

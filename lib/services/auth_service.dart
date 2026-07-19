@@ -57,4 +57,6 @@ class AuthService {
     final remember = await _storage.read(key: 'remember_me');
     return remember == 'true';
   }
+
+  Future<void> saveToken(String s) async {}
 }
