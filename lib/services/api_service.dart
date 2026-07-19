@@ -329,32 +329,54 @@ class ApiService {
     }
   }
   
-  Future<bool> changePassword(String currentPassword, String newPassword) async {
-    try {
-      print('🟡 Change password request');
-      
-      final response = await _dio.request(
-        ApiConstants.changePassword,
-        options: Options(
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        ),
-        data: {
-          'current_password': currentPassword,
-          'new_password': newPassword,
+Future<bool> changePassword(String currentPassword, String newPassword) async {
+  try {
+    print('🟡 Change password request');
+    print('🟡 Current password length: ${currentPassword.length}');
+    print('🟡 New password length: ${newPassword.length}');
+    
+    final response = await _dio.request(
+      ApiConstants.changePassword,
+      options: Options(
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
-      
-      print('🟢 Change password response: ${response.data}');
-      
-      return response.data['success'] ?? false;
-    } catch (e) {
-      print('🔴 Change password error: $e');
+      ),
+      data: {
+        'current_password': currentPassword,
+        'new_password': newPassword,
+      },
+    );
+    
+    print('🟢 Change password response: ${response.data}');
+    
+    // Check if response indicates success
+    if (response.data['success'] == true) {
+      return true;
+    } else {
+      // Return false with error message
+      final message = response.data['message'] ?? 'Failed to change password';
+      print('🔴 Change password failed: $message');
       return false;
     }
+  } on DioException catch (e) {
+    print('🔴 Change password error: ${e.message}');
+    print('🔴 Response data: ${e.response?.data}');
+    
+    // Extract error message from response
+    if (e.response?.data != null) {
+      final data = e.response?.data;
+      if (data is Map && data['message'] != null) {
+        print('🔴 Error message: ${data['message']}');
+      }
+    }
+    return false;
+  } catch (e) {
+    print('🔴 Change password error: $e');
+    return false;
   }
+}
   
   Future<bool> verifyToken() async {
     try {

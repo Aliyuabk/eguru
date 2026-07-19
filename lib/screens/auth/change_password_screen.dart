@@ -19,6 +19,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isSubmitted = false;
+  bool _obscureCurrent = true;
+  bool _obscureNew = true;
+  bool _obscureConfirm = true;
 
   @override
   void dispose() {
@@ -65,7 +68,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Password must be at least 8 characters with a mix of letters, numbers, and symbols',
+                        'Password must be at least 6 characters with a mix of letters, numbers, and symbols',
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           color: AppColors.gray700,
@@ -79,13 +82,44 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               const SizedBox(height: 24),
               
               // Current Password
-              CustomTextField(
-                label: 'Current Password',
-                hint: 'Enter your current password',
+              TextFormField(
                 controller: _currentPasswordController,
-                isPassword: true,
-                isRequired: true,
-                prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
+                obscureText: _obscureCurrent,
+                decoration: InputDecoration(
+                  labelText: 'Current Password',
+                  hintText: 'Enter your current password',
+                  prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureCurrent ? Icons.visibility_off : Icons.visibility,
+                      color: AppColors.gray400,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureCurrent = !_obscureCurrent;
+                      });
+                    },
+                  ),
+                  filled: true,
+                  fillColor: AppColors.gray50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.danger, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your current password';
@@ -100,19 +134,53 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               const SizedBox(height: 16),
               
               // New Password
-              CustomTextField(
-                label: 'New Password',
-                hint: 'Enter your new password',
+              TextFormField(
                 controller: _newPasswordController,
-                isPassword: true,
-                isRequired: true,
-                prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
+                obscureText: _obscureNew,
+                decoration: InputDecoration(
+                  labelText: 'New Password',
+                  hintText: 'Enter your new password',
+                  prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureNew ? Icons.visibility_off : Icons.visibility,
+                      color: AppColors.gray400,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureNew = !_obscureNew;
+                      });
+                    },
+                  ),
+                  filled: true,
+                  fillColor: AppColors.gray50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.danger, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your new password';
                   }
                   if (value.length < 6) {
                     return 'Password must be at least 6 characters';
+                  }
+                  if (value == _currentPasswordController.text) {
+                    return 'New password must be different from current password';
                   }
                   if (_confirmPasswordController.text.isNotEmpty &&
                       value != _confirmPasswordController.text) {
@@ -125,13 +193,44 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               const SizedBox(height: 16),
               
               // Confirm Password
-              CustomTextField(
-                label: 'Confirm Password',
-                hint: 'Confirm your new password',
+              TextFormField(
                 controller: _confirmPasswordController,
-                isPassword: true,
-                isRequired: true,
-                prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
+                obscureText: _obscureConfirm,
+                decoration: InputDecoration(
+                  labelText: 'Confirm Password',
+                  hintText: 'Confirm your new password',
+                  prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                      color: AppColors.gray400,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureConfirm = !_obscureConfirm;
+                      });
+                    },
+                  ),
+                  filled: true,
+                  fillColor: AppColors.gray50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.danger, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please confirm your new password';
@@ -150,6 +249,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 text: 'Change Password',
                 onPressed: _isSubmitted ? null : () async {
                   if (_formKey.currentState?.validate() ?? false) {
+                    // Check if new password is different from current
+                    if (_newPasswordController.text == _currentPasswordController.text) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'New password must be different from current password',
+                            style: GoogleFonts.inter(),
+                          ),
+                          backgroundColor: AppColors.warning,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+                    
                     final success = await authProvider.changePassword(
                       _currentPasswordController.text,
                       _newPasswordController.text,
@@ -176,7 +293,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            authProvider.error ?? 'Failed to change password',
+                            authProvider.error ?? 'Failed to change password. Please check your current password.',
                             style: GoogleFonts.inter(),
                           ),
                           backgroundColor: AppColors.danger,
@@ -191,6 +308,41 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 },
                 isLoading: authProvider.isLoading,
               ),
+              
+              if (_isSubmitted) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.success),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: AppColors.success),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Password changed successfully! Please use your new password next time you login.',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                CustomButton(
+                  text: 'Back to Profile',
+                  type: ButtonType.outline,
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
             ],
           ),
         ),

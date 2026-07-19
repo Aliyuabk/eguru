@@ -5,6 +5,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
 import '../../providers/auth_provider.dart';
+import '../common/dashboard_screen.dart';
 import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -20,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  bool _isLoggingIn = false;
 
   @override
   void dispose() {
@@ -31,6 +33,16 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    
+    // If user is already authenticated, redirect to dashboard
+    if (authProvider.isAuthenticated && !_isLoggingIn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      });
+    }
     
     return Scaffold(
       backgroundColor: Colors.white,
@@ -196,27 +208,26 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Login Button
                 CustomButton(
                   text: 'Sign In',
-                  onPressed: () async {
+                  onPressed: _isLoggingIn ? null : () async {
                     if (_formKey.currentState?.validate() ?? false) {
+                      setState(() {
+                        _isLoggingIn = true;
+                      });
+                      
                       final success = await authProvider.login(
                         _emailController.text.trim(),
                         _passwordController.text,
                       );
                       
-                      if (success) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Welcome back, ${authProvider.user?.firstName}!',
-                              style: GoogleFonts.inter(),
-                            ),
-                            backgroundColor: AppColors.success,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
+                      setState(() {
+                        _isLoggingIn = false;
+                      });
+                      
+                      if (success && mounted) {
+                        // Navigate to dashboard immediately
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const DashboardScreen()),
                         );
                       } else {
                         if (!mounted) return;
@@ -236,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       }
                     }
                   },
-                  isLoading: authProvider.isLoading,
+                  isLoading: _isLoggingIn || authProvider.isLoading,
                 ),
                 
                 const SizedBox(height: 20),

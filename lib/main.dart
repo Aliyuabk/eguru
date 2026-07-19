@@ -5,6 +5,8 @@ import 'core/constants/app_colors.dart';
 import 'core/constants/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'screens/splash_screen.dart';
+import 'screens/common/dashboard_screen.dart';
+import 'screens/auth/login_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,29 +20,41 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(),
+        ),
       ],
       child: MaterialApp(
         title: 'Election Monitor',
         theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
-        home: Consumer<AuthProvider>(
-          builder: (context, authProvider, _) {
-            if (!authProvider.isInitialized) {
-              return const Scaffold(
-                body: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
-            return const SplashScreen();
-          },
-        ),
+        home: const AppNavigator(),
         routes: {
-          '/login': (context) => const SplashScreen(),
-          '/dashboard': (context) => const SplashScreen(),
+          '/login': (context) => const LoginScreen(),
+          '/dashboard': (context) => const DashboardScreen(),
         },
       ),
     );
+  }
+}
+
+class AppNavigator extends StatelessWidget {
+  const AppNavigator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    
+    // Show splash screen while initializing
+    if (!authProvider.isInitialized) {
+      return const SplashScreen();
+    }
+    
+    // Navigate based on authentication status
+    if (authProvider.isAuthenticated) {
+      return const DashboardScreen();
+    } else {
+      return const LoginScreen();
+    }
   }
 }

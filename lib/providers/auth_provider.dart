@@ -19,10 +19,10 @@ class AuthProvider extends ChangeNotifier {
   bool get isAuthenticated => _user != null;
   
   AuthProvider() {
-    checkAuthStatus();
+    _checkAuthStatus();
   }
   
-  Future<void> checkAuthStatus() async {
+  Future<void> _checkAuthStatus() async {
     _isLoading = true;
     _isInitialized = false;
     notifyListeners();
@@ -31,15 +31,18 @@ class AuthProvider extends ChangeNotifier {
       _user = await _authService.getUser();
       final token = await _authService.getToken();
       
-      if (_user != null && token != null) {
+      if (_user != null && token != null && token.isNotEmpty) {
         // Verify token is still valid
         final isValid = await _apiService.verifyToken();
         if (!isValid) {
           _user = null;
           await _authService.clearAuthData();
         }
+      } else {
+        _user = null;
       }
     } catch (e) {
+      print('Auth check error: $e');
       _user = null;
       await _authService.clearAuthData();
     }
@@ -79,13 +82,18 @@ class AuthProvider extends ChangeNotifier {
   
   Future<void> logout() async {
     try {
+      // Call logout API
       await _apiService.logout();
     } catch (e) {
-      // Ignore
+      print('Logout error: $e');
     } finally {
+      // Clear user data
       _user = null;
       await _authService.clearAuthData();
+      _isLoading = false;
+      _isInitialized = true;
       notifyListeners();
+      print('User logged out successfully');
     }
   }
   
@@ -123,5 +131,10 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+  
+  // Check auth status method (public)
+  Future<void> checkAuthStatus() async {
+    await _checkAuthStatus();
   }
 }
