@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/status_card.dart';
 import 'volunteer_tasks.dart';
@@ -16,168 +17,208 @@ class _VolunteerDashboardScreenState extends State<VolunteerDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Volunteer Dashboard'),
-        backgroundColor: Colors.white,
-        elevation: 0,
+      body: RefreshIndicator(
+        onRefresh: () async => Future.delayed(const Duration(seconds: 1)),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              
+              // Welcome Header
+              _buildWelcomeHeader(),
+              
+              const SizedBox(height: 24),
+              
+              // Stats Row
+              _buildStatsRow(),
+              
+              const SizedBox(height: 24),
+              
+              // Quick Actions
+              _buildQuickActions(),
+              
+              const SizedBox(height: 24),
+              
+              // Current Tasks
+              _buildCurrentTasks(),
+            ],
+          ),
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+
+  Widget _buildWelcomeHeader() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF059669), Color(0xFF047857)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppColors.radius),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: Colors.white.withOpacity(0.2),
+                child: const Text(
+                  'V',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Welcome, Volunteer!',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'Supporting Election Activities',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Text(
+                      'Active',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: StatusCard(
+            title: 'Tasks',
+            value: '6',
+            icon: Icons.assignment,
+            color: AppColors.primary,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: StatusCard(
+            title: 'Completed',
+            value: '4',
+            icon: Icons.check_circle,
+            color: AppColors.success,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Actions',
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColors.gray800,
+          ),
+        ),
+        const SizedBox(height: 16),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
           children: [
-            // Welcome Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF059669), Color(0xFF047857)],
-                ),
-                borderRadius: BorderRadius.circular(AppColors.radius),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Welcome, Volunteer!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Supporting Election Activities • 2027 Governorship',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _buildStatusChip('Active', Colors.green),
-                      const SizedBox(width: 8),
-                      _buildStatusChip('Available', Colors.blue),
-                    ],
-                  ),
-                ],
-              ),
+            _buildQuickAction(
+              'My Tasks',
+              Icons.assignment,
+              AppColors.primary,
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const VolunteerTasksScreen()),
+                );
+              },
             ),
-            
-            const SizedBox(height: 24),
-            
-            // Quick Stats
-            Row(
-              children: [
-                Expanded(
-                  child: StatusCard(
-                    title: 'Tasks',
-                    value: '6',
-                    icon: Icons.assignment,
-                    color: AppColors.primary,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: StatusCard(
-                    title: 'Completed',
-                    value: '4',
-                    icon: Icons.check_circle,
-                    color: AppColors.success,
-                  ),
-                ),
-              ],
+            _buildQuickAction(
+              'Reports',
+              Icons.report,
+              AppColors.warning,
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const VolunteerReportsScreen()),
+                );
+              },
             ),
-            
-            const SizedBox(height: 16),
-            
-            Row(
-              children: [
-                Expanded(
-                  child: StatusCard(
-                    title: 'Reports',
-                    value: '3',
-                    icon: Icons.report,
-                    color: AppColors.warning,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: StatusCard(
-                    title: 'Community',
-                    value: '12',
-                    icon: Icons.people,
-                    color: AppColors.info,
-                  ),
-                ),
-              ],
+            _buildQuickAction(
+              'Community',
+              Icons.people,
+              AppColors.info,
+              () {},
             ),
-            
-            const SizedBox(height: 24),
-            
-            // Quick Actions
-            Text(
-              'Quick Actions',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-            
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              children: [
-                _buildQuickAction(
-                  'My Tasks',
-                  Icons.assignment,
-                  AppColors.primary,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const VolunteerTasksScreen(),
-                      ),
-                    );
-                  },
-                ),
-                _buildQuickAction(
-                  'Reports',
-                  Icons.report,
-                  AppColors.warning,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const VolunteerReportsScreen(),
-                      ),
-                    );
-                  },
-                ),
-                _buildQuickAction(
-                  'Community',
-                  Icons.people,
-                  AppColors.info,
-                  () {
-                    // Navigate to community
-                  },
-                ),
-                _buildQuickAction(
-                  'Chat',
-                  Icons.chat,
-                  AppColors.secondary,
-                  () {
-                    // Navigate to chat
-                  },
-                ),
-              ],
+            _buildQuickAction(
+              'Chat',
+              Icons.chat,
+              AppColors.secondary,
+              () {},
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 
@@ -206,16 +247,12 @@ class _VolunteerDashboardScreenState extends State<VolunteerDashboardScreen> {
                 color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 28,
-              ),
+              child: Icon(icon, color: color, size: 28),
             ),
             const SizedBox(height: 8),
             Text(
               title,
-              style: const TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: AppColors.gray700,
@@ -228,32 +265,158 @@ class _VolunteerDashboardScreenState extends State<VolunteerDashboardScreen> {
     );
   }
 
-  Widget _buildStatusChip(String label, Color color) {
+  Widget _buildCurrentTasks() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Current Tasks',
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.gray800,
+              ),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: Text(
+                'View All',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildTaskItem(
+          'Assist at Polling Unit',
+          'Help with voter registration and crowd control',
+          'Kangire P.S',
+          'In Progress',
+          0.7,
+        ),
+        _buildTaskItem(
+          'Distribute Materials',
+          'Deliver election materials to assigned polling units',
+          'Kangire Ward',
+          'Pending',
+          0.0,
+        ),
+        _buildTaskItem(
+          'Monitor Accreditation',
+          'Observe and report on accreditation process',
+          'Kangire P.S',
+          'Completed',
+          1.0,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTaskItem(String title, String subtitle, String location, String status, double progress) {
+    Color statusColor;
+    switch (status) {
+      case 'Completed':
+        statusColor = AppColors.success;
+        break;
+      case 'In Progress':
+        statusColor = AppColors.warning;
+        break;
+      default:
+        statusColor = AppColors.info;
+    }
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.gray800,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  status,
+                  style: GoogleFonts.inter(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: AppColors.gray500,
             ),
           ),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.location_on, size: 14, color: AppColors.gray400),
+              const SizedBox(width: 4),
+              Text(
+                location,
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  color: AppColors.gray400,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${(progress * 100).toInt()}%',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: statusColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: progress,
+            backgroundColor: AppColors.gray200,
+            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+            minHeight: 4,
+            borderRadius: BorderRadius.circular(2),
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
@@ -61,22 +62,30 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 24),
               
               // Title
-              Text(
-                'Reset Password',
-                style: Theme.of(context).textTheme.headlineMedium,
-                textAlign: TextAlign.center,
+              Center(
+                child: Text(
+                  _isSubmitted ? 'Check Your Email' : 'Reset Password',
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.gray900,
+                  ),
+                ),
               ),
               
               const SizedBox(height: 8),
               
-              Text(
-                _isSubmitted 
-                    ? 'Password reset link has been sent to your email'
-                    : 'Enter your email address and we\'ll send you a link to reset your password',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.gray500,
+              Center(
+                child: Text(
+                  _isSubmitted 
+                      ? 'We\'ve sent a password reset link to your email'
+                      : 'Enter your email address and we\'ll send you a link to reset your password',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: AppColors.gray500,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
               
               const SizedBox(height: 40),
@@ -119,6 +128,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           SnackBar(
                             content: Text(authProvider.error ?? 'Failed to send reset link'),
                             backgroundColor: AppColors.danger,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         );
                       }
@@ -128,10 +141,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ] else ...[
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: AppColors.success.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.success),
                   ),
                   child: Column(
@@ -144,12 +157,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       const SizedBox(height: 12),
                       Text(
                         'Check your email',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.gray800,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'We\'ve sent a password reset link to ${_emailController.text}',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: AppColors.gray500,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -164,7 +184,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 children: [
                   Text(
                     'Remember your password?',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: AppColors.gray500,
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
@@ -172,9 +195,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     },
                     child: Text(
                       'Sign In',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.primary,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
                       ),
                     ),
                   ),

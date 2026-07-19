@@ -9,25 +9,43 @@ class AuthProvider extends ChangeNotifier {
   
   User? _user;
   bool _isLoading = false;
+  bool _isInitialized = false;
   String? _error;
   
   User? get user => _user;
   bool get isLoading => _isLoading;
+  bool get isInitialized => _isInitialized;
   String? get error => _error;
   bool get isAuthenticated => _user != null;
   
   AuthProvider() {
-    _loadUser();
+    checkAuthStatus();
   }
   
-  Future<void> _loadUser() async {
-    _user = await _authService.getUser();
+  Future<void> checkAuthStatus() async {
+    _isLoading = true;
+    _isInitialized = false;
     notifyListeners();
-  }
-  
-  // Add this method for test login
-  void setUser(User user) {
-    _user = user;
+    
+    try {
+      _user = await _authService.getUser();
+      final token = await _authService.getToken();
+      
+      if (_user != null && token != null) {
+        // Verify token is still valid
+        final isValid = await _apiService.verifyToken();
+        if (!isValid) {
+          _user = null;
+          await _authService.clearAuthData();
+        }
+      }
+    } catch (e) {
+      _user = null;
+      await _authService.clearAuthData();
+    }
+    
+    _isLoading = false;
+    _isInitialized = true;
     notifyListeners();
   }
   
@@ -41,8 +59,7 @@ class AuthProvider extends ChangeNotifier {
       
       if (response.success && response.user != null) {
         _user = response.user;
-        await _authService.saveUser(_user!);
-        await _authService.saveToken(response.token ?? '');
+        await _authService.saveAuthData(_user!, response.token ?? '');
         _isLoading = false;
         notifyListeners();
         return true;
@@ -53,7 +70,7 @@ class AuthProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _error = 'An error occurred. Please try again.';
+      _error = 'An error occurred: $e';
       _isLoading = false;
       notifyListeners();
       return false;
@@ -61,10 +78,15 @@ class AuthProvider extends ChangeNotifier {
   }
   
   Future<void> logout() async {
-    await _apiService.logout();
-    _user = null;
-    await _authService.clearAuthData();
-    notifyListeners();
+    try {
+      await _apiService.logout();
+    } catch (e) {
+      // Ignore
+    } finally {
+      _user = null;
+      await _authService.clearAuthData();
+      notifyListeners();
+    }
   }
   
   Future<bool> forgotPassword(String email) async {
@@ -78,7 +100,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return response.success;
     } catch (e) {
-      _error = 'An error occurred. Please try again.';
+      _error = 'An error occurred: $e';
       _isLoading = false;
       notifyListeners();
       return false;
@@ -96,7 +118,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return success;
     } catch (e) {
-      _error = 'An error occurred. Please try again.';
+      _error = 'An error occurred: $e';
       _isLoading = false;
       notifyListeners();
       return false;

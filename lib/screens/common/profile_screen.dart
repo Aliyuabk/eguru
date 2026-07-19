@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/custom_button.dart';
-import '../../core/widgets/custom_text_field.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/change_password_screen.dart';
 
@@ -15,9 +15,16 @@ class ProfileScreen extends StatelessWidget {
     final user = authProvider.user;
     
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: Colors.transparent,
+        title: Text(
+          'Profile',
+          style: GoogleFonts.inter(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: Colors.white,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -34,6 +41,7 @@ class ProfileScreen extends StatelessWidget {
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
                     blurRadius: 10,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
@@ -44,18 +52,15 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundImage: user?.avatar != null
-                            ? NetworkImage(user!.avatar!)
-                            : null,
-                        child: user?.avatar == null
-                            ? Text(
-                                user?.firstName[0] ?? 'U',
-                                style: const TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
-                            : null,
+                        backgroundColor: AppColors.primaryLight.withOpacity(0.1),
+                        child: Text(
+                          user?.firstName?[0] ?? 'U',
+                          style: GoogleFonts.inter(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
                       ),
                       Positioned(
                         bottom: 0,
@@ -65,6 +70,7 @@ class ProfileScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: AppColors.primary,
                             shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
                           ),
                           child: const Icon(
                             Icons.camera_alt,
@@ -78,34 +84,33 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(
                     user?.fullName ?? 'User Name',
-                    style: const TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      color: AppColors.gray900,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     user?.email ?? 'email@example.com',
-                    style: const TextStyle(
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
                       color: AppColors.gray500,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.primaryLight.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       user?.roleName ?? 'User',
-                      style: TextStyle(
-                        color: AppColors.primary,
+                      style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
+                        color: AppColors.primary,
                       ),
                     ),
                   ),
@@ -125,6 +130,7 @@ class ProfileScreen extends StatelessWidget {
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
                     blurRadius: 10,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
@@ -147,7 +153,7 @@ class ProfileScreen extends StatelessWidget {
             
             // Actions
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -155,6 +161,7 @@ class ProfileScreen extends StatelessWidget {
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
                     blurRadius: 10,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
@@ -176,25 +183,19 @@ class ProfileScreen extends StatelessWidget {
                   _buildActionItem(
                     Icons.notifications_none,
                     'Notification Settings',
-                    () {
-                      // Navigate to notification settings
-                    },
+                    () {},
                   ),
                   _buildDivider(),
                   _buildActionItem(
                     Icons.language,
                     'Language',
-                    () {
-                      // Show language selector
-                    },
+                    () {},
                   ),
                   _buildDivider(),
                   _buildActionItem(
                     Icons.info_outline,
                     'About',
-                    () {
-                      // Show about
-                    },
+                    () {},
                   ),
                 ],
               ),
@@ -210,18 +211,37 @@ class ProfileScreen extends StatelessWidget {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('Logout'),
-                    content: const Text('Are you sure you want to logout?'),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    title: Text(
+                      'Logout',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    content: Text(
+                      'Are you sure you want to logout?',
+                      style: GoogleFonts.inter(),
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancel'),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.inter(
+                            color: AppColors.gray500,
+                          ),
+                        ),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text(
+                        child: Text(
                           'Logout',
-                          style: TextStyle(color: AppColors.danger),
+                          style: GoogleFonts.inter(
+                            color: AppColors.danger,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -249,16 +269,17 @@ class ProfileScreen extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.gray500,
+            style: GoogleFonts.inter(
               fontSize: 14,
+              color: AppColors.gray500,
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
+            style: GoogleFonts.inter(
               fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.gray800,
             ),
           ),
         ],
@@ -269,11 +290,21 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildActionItem(IconData icon, String label, VoidCallback onTap) {
     return ListTile(
       leading: Icon(icon, color: AppColors.gray600),
-      title: Text(label),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.gray400),
+      title: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          color: AppColors.gray800,
+        ),
+      ),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: AppColors.gray400,
+      ),
       onTap: onTap,
       dense: true,
-      contentPadding: EdgeInsets.zero,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
     );
   }
 

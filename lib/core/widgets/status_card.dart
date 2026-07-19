@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
 class StatusCard extends StatelessWidget {
@@ -50,8 +51,8 @@ class StatusCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 12,
+                style: GoogleFonts.inter(
+                  fontSize: 11,
                   color: AppColors.gray500,
                 ),
               ),
@@ -60,7 +61,7 @@ class StatusCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: AppColors.gray900,

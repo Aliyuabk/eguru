@@ -47,6 +47,10 @@ class ChatMessage {
   bool get isLocation => messageType == 'location';
 }
 
+class JsonSerializable {
+  const JsonSerializable();
+}
+
 @JsonSerializable()
 class ChatRoom {
   final int id;

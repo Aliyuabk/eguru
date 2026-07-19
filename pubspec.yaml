@@ -1,9 +1,9 @@
 name: election_monitor_app
-description: A comprehensive election monitoring mobile application
+description: A comprehensive election monitoring mobile application with professional UI/UX
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.8.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -14,6 +14,7 @@ dependencies:
   google_fonts: ^6.1.0
   shimmer: ^3.0.0
   flutter_staggered_animations: ^1.1.1
+  smooth_page_indicator: ^1.1.0
   
   # State Management
   provider: ^6.0.5
@@ -21,66 +22,40 @@ dependencies:
   # Networking
   dio: ^5.3.2
   retrofit: ^4.0.1
-  json_annotation: ^4.8.1
   
   # Local Storage
   shared_preferences: ^2.2.2
-  sqflite: ^2.3.0
-  hive_flutter: ^1.1.0
-  
-  # Authentication
-  local_auth: ^2.1.6
+  flutter_secure_storage: ^9.0.0
   
   # Location & Maps
   geolocator: ^10.1.0
-  geocoding: ^2.1.1
   
   # Camera & Media
-  camera: ^0.10.5
   image_picker: ^1.0.4
   file_picker: ^5.5.0
   video_player: ^2.7.2
-  # RECORD_AUDIO_PLUGIN - Using record package instead
-  record: ^5.0.0
-  audio_waveforms: ^1.0.0
-  
-  # Chat
-  agora_rtc_engine: ^6.2.0
-  
-  # # Push Notifications
-  # firebase_messaging: ^14.6.5
-  # flutter_local_notifications: ^15.1.1
   
   # Utilities
   intl: ^0.18.1
   connectivity_plus: ^5.0.1
-  package_info_plus: ^4.2.0
-  device_info_plus: ^9.1.0
-  
-  # Security
-  flutter_secure_storage: ^9.0.0
-  crypto: ^3.0.3
+  permission_handler: ^11.0.1
   
   # UI Components
   fluttertoast: ^8.2.2
-  modal_progress_hud_nsn: ^0.4.0
-  pull_to_refresh: ^2.0.0
   cached_network_image: ^3.3.0
   photo_view: ^0.14.0
   flutter_rating_bar: ^4.0.1
-  permission_handler: ^11.0.1
+  pull_to_refresh: ^2.0.0
+  json_annotation: ^4.12.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^2.4.6
-  json_serializable: ^6.7.1
   flutter_lints: ^2.0.0
 
 flutter:
   uses-material-design: true
   
-  # assets:
-  #   - assets/images/
-  #   - assets/fonts/
-  #   - assets/icons/
+  assets:
+    - assets/images/
+    - assets/icons/

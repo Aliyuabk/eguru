@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
-import '../constants/app_theme.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -11,8 +11,6 @@ class CustomButton extends StatelessWidget {
   final double? width;
   final double? height;
   final IconData? icon;
-  final Color? backgroundColor;
-  final Color? textColor;
 
   const CustomButton({
     super.key,
@@ -24,8 +22,6 @@ class CustomButton extends StatelessWidget {
     this.width,
     this.height,
     this.icon,
-    this.backgroundColor,
-    this.textColor,
   });
 
   @override
@@ -33,69 +29,65 @@ class CustomButton extends StatelessWidget {
     return SizedBox(
       width: isFullWidth ? double.infinity : width,
       height: height ?? 50,
-      child: _buildButton(),
+      child: ElevatedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: _getButtonStyle(),
+        child: _buildChild(),
+      ),
     );
   }
 
-  Widget _buildButton() {
+  ButtonStyle _getButtonStyle() {
+    Color backgroundColor;
+    Color foregroundColor = Colors.white;
+    
     switch (type) {
       case ButtonType.primary:
-        return ElevatedButton(
-          onPressed: isLoading ? null : onPressed,
-          style: CustomButtonStyles.primary.copyWith(
-            backgroundColor: WidgetStateProperty.all(backgroundColor ?? AppColors.primary),
-            foregroundColor: WidgetStateProperty.all(textColor ?? Colors.white),
-          ),
-          child: _buildChild(),
-        );
+        backgroundColor = AppColors.primary;
+        break;
       case ButtonType.secondary:
-        return ElevatedButton(
-          onPressed: isLoading ? null : onPressed,
-          style: CustomButtonStyles.secondary.copyWith(
-            backgroundColor: WidgetStateProperty.all(backgroundColor ?? AppColors.secondary),
-            foregroundColor: WidgetStateProperty.all(textColor ?? Colors.white),
-          ),
-          child: _buildChild(),
-        );
+        backgroundColor = AppColors.secondary;
+        break;
       case ButtonType.danger:
-        return ElevatedButton(
-          onPressed: isLoading ? null : onPressed,
-          style: CustomButtonStyles.danger.copyWith(
-            backgroundColor: WidgetStateProperty.all(backgroundColor ?? AppColors.danger),
-            foregroundColor: WidgetStateProperty.all(textColor ?? Colors.white),
-          ),
-          child: _buildChild(),
-        );
+        backgroundColor = AppColors.danger;
+        break;
       case ButtonType.outline:
-        return OutlinedButton(
-          onPressed: isLoading ? null : onPressed,
-          style: CustomButtonStyles.outline.copyWith(
-            side: WidgetStateProperty.all(
-              BorderSide(color: backgroundColor ?? AppColors.primary)
-            ),
-            foregroundColor: WidgetStateProperty.all(textColor ?? AppColors.primary),
-          ),
-          child: _buildChild(),
-        );
+        backgroundColor = Colors.transparent;
+        foregroundColor = AppColors.primary;
+        break;
       case ButtonType.text:
-        return TextButton(
-          onPressed: isLoading ? null : onPressed,
-          style: CustomButtonStyles.text.copyWith(
-            foregroundColor: WidgetStateProperty.all(textColor ?? AppColors.primary),
-          ),
-          child: _buildChild(),
-        );
+        backgroundColor = Colors.transparent;
+        foregroundColor = AppColors.primary;
+        break;
     }
+
+    return ElevatedButton.styleFrom(
+      backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
+      elevation: type == ButtonType.outline || type == ButtonType.text ? 0 : 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: type == ButtonType.outline
+            ? BorderSide(color: AppColors.primary)
+            : BorderSide.none,
+      ),
+      textStyle: GoogleFonts.inter(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+      ),
+    );
   }
 
   Widget _buildChild() {
     if (isLoading) {
-      return const SizedBox(
+      return SizedBox(
         height: 24,
         width: 24,
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          color: Colors.white,
+          color: type == ButtonType.outline || type == ButtonType.text
+              ? AppColors.primary
+              : Colors.white,
         ),
       );
     }

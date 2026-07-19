@@ -1,8 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'user_model.g.dart';
-
-@JsonSerializable()
 class User {
   final int id;
   final int? tenantId;
@@ -16,11 +11,11 @@ class User {
   final String? avatar;
   final String? photographUrl;
   final String? gender;
-  final DateTime? dateOfBirth;
+  final String? dateOfBirth;
   final String? roleName;
   final String? roleLevel;
   final String? tenantName;
-  final bool? twoFactorEnabled;
+  final int? twoFactorEnabled;
   final String? token;
   final String status;
   
@@ -46,8 +41,53 @@ class User {
     this.status = 'active',
   });
 
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
-  Map<String, dynamic> toJson() => _$UserToJson(this);
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'] ?? 0,
+      tenantId: json['tenant_id'],
+      userCode: json['user_code'] ?? '',
+      roleId: json['role_id'] ?? 0,
+      firstName: json['first_name'] ?? '',
+      lastName: json['last_name'] ?? '',
+      fullName: json['full_name'] ?? '',
+      email: json['email'],
+      phone: json['phone'],
+      avatar: json['avatar'],
+      photographUrl: json['photograph_url'],
+      gender: json['gender'],
+      dateOfBirth: json['date_of_birth'],
+      roleName: json['role_name'],
+      roleLevel: json['role_level'],
+      tenantName: json['tenant_name'],
+      twoFactorEnabled: json['two_factor_enabled'],
+      token: json['token'],
+      status: json['status'] ?? 'active',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'tenant_id': tenantId,
+      'user_code': userCode,
+      'role_id': roleId,
+      'first_name': firstName,
+      'last_name': lastName,
+      'full_name': fullName,
+      'email': email,
+      'phone': phone,
+      'avatar': avatar,
+      'photograph_url': photographUrl,
+      'gender': gender,
+      'date_of_birth': dateOfBirth,
+      'role_name': roleName,
+      'role_level': roleLevel,
+      'tenant_name': tenantName,
+      'two_factor_enabled': twoFactorEnabled,
+      'token': token,
+      'status': status,
+    };
+  }
   
   bool get isPuAgent => roleLevel == 'pu_agent';
   bool get isPartyAgent => roleLevel == 'party_agent';
@@ -57,7 +97,6 @@ class User {
   bool get isSuperAdmin => roleLevel == 'super_admin';
 }
 
-@JsonSerializable()
 class LoginResponse {
   final bool success;
   final String? message;
@@ -71,11 +110,25 @@ class LoginResponse {
     this.token,
   });
 
-  factory LoginResponse.fromJson(Map<String, dynamic> json) => _$LoginResponseFromJson(json);
-  Map<String, dynamic> toJson() => _$LoginResponseToJson(this);
+  factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    return LoginResponse(
+      success: json['success'] ?? false,
+      message: json['message'],
+      user: json['user'] != null ? User.fromJson(json['user']) : null,
+      token: json['token'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      'message': message,
+      'user': user?.toJson(),
+      'token': token,
+    };
+  }
 }
 
-@JsonSerializable()
 class ForgotPasswordResponse {
   final bool success;
   final String? message;
@@ -85,5 +138,17 @@ class ForgotPasswordResponse {
     this.message,
   });
 
-  factory ForgotPasswordResponse.fromJson(Map<String, dynamic> json) => _$ForgotPasswordResponseFromJson(json);
+  factory ForgotPasswordResponse.fromJson(Map<String, dynamic> json) {
+    return ForgotPasswordResponse(
+      success: json['success'] ?? false,
+      message: json['message'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      'message': message,
+    };
+  }
 }

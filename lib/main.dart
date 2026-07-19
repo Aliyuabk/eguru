@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'core/constants/app_colors.dart';
 import 'core/constants/app_theme.dart';
 import 'providers/auth_provider.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/common/dashboard_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,16 +26,19 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         home: Consumer<AuthProvider>(
           builder: (context, authProvider, _) {
-            if (authProvider.isAuthenticated) {
-              return const DashboardScreen();
-            } else {
-              return const LoginScreen();
+            if (!authProvider.isInitialized) {
+              return const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
             }
+            return const SplashScreen();
           },
         ),
         routes: {
-          '/login': (context) => const LoginScreen(),
-          '/dashboard': (context) => const DashboardScreen(),
+          '/login': (context) => const SplashScreen(),
+          '/dashboard': (context) => const SplashScreen(),
         },
       ),
     );

@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/auth_service.dart';
-import '../../models/user_model.dart';
-import '../common/dashboard_screen.dart';
 import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -21,7 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final AuthService _authService = AuthService();
   bool _obscurePassword = true;
   bool _rememberMe = false;
 
@@ -30,62 +26,6 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  // Test login method - bypass API for testing
-  Future<void> _testLogin() async {
-    try {
-      // Create a test user
-      final testUser = User(
-        id: 1,
-        tenantId: 14,
-        userCode: 'USR000014',
-        roleId: 2,
-        firstName: 'Test',
-        lastName: 'User',
-        fullName: 'Test User',
-        email: 'test@example.com',
-        phone: '+2348034897638',
-        roleName: 'PU Agent',
-        roleLevel: 'pu_agent',
-        tenantName: 'Test Tenant',
-        token: 'test_token_123',
-        status: 'active',
-      );
-      
-      // Save user to auth service
-      await _authService.saveUser(testUser);
-      await _authService.saveToken('test_token_123');
-      
-      // Update the auth provider
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      authProvider.setUser(testUser);
-      
-      // Navigate to dashboard
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Test login successful!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        
-        // Use pushReplacement to replace the login screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const DashboardScreen()),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Test login failed: $e'),
-            backgroundColor: AppColors.danger,
-          ),
-        );
-      }
-    }
   }
 
   @override
@@ -102,39 +42,56 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
                 
-                // Logo
-                Center(
+                // Back Button
+                InkWell(
+                  onTap: () => Navigator.pop(context),
                   child: Container(
-                    height: 80,
-                    width: 80,
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      shape: BoxShape.circle,
+                      color: AppColors.gray100,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
-                      Icons.how_to_vote,
-                      size: 40,
-                      color: AppColors.primary,
-                    ),
+                    child: const Icon(Icons.arrow_back, size: 20),
                   ),
                 ),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: 40),
                 
-                // Title
+                // Logo and Title
                 Center(
                   child: Column(
                     children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [AppColors.primary, AppColors.primaryDark],
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.how_to_vote,
+                          size: 40,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
                       Text(
                         'Welcome Back!',
-                        style: Theme.of(context).textTheme.displayMedium,
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.gray900,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Sign in to continue to your dashboard',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
                           color: AppColors.gray500,
                         ),
                       ),
@@ -142,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 40),
+                const SizedBox(height: 48),
                 
                 // Email Field
                 CustomTextField(
@@ -206,7 +163,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         Text(
                           'Remember me',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: AppColors.gray600,
+                          ),
                         ),
                       ],
                     ),
@@ -221,9 +181,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       child: Text(
                         'Forgot password?',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.primary,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
                         ),
                       ),
                     ),
@@ -245,17 +206,31 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (success) {
                         if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Login successful!'),
+                          SnackBar(
+                            content: Text(
+                              'Welcome back, ${authProvider.user?.firstName}!',
+                              style: GoogleFonts.inter(),
+                            ),
                             backgroundColor: AppColors.success,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         );
                       } else {
                         if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(authProvider.error ?? 'Login failed'),
+                            content: Text(
+                              authProvider.error ?? 'Login failed',
+                              style: GoogleFonts.inter(),
+                            ),
                             backgroundColor: AppColors.danger,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         );
                       }
@@ -264,52 +239,42 @@ class _LoginScreenState extends State<LoginScreen> {
                   isLoading: authProvider.isLoading,
                 ),
                 
-                const SizedBox(height: 12),
-                
-                // Test Login Button (for development only)
-                CustomButton(
-                  text: 'Test Login (Bypass API)',
-                  type: ButtonType.secondary,
-                  onPressed: _testLogin,
-                ),
-                
                 const SizedBox(height: 20),
                 
-                // Demo Account Notice
+                // Demo Accounts
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.gray50,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.gray200),
                   ),
                   child: Column(
                     children: [
                       Text(
                         'Demo Accounts',
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
+                          color: AppColors.gray700,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
                         children: [
-                          _buildDemoAccount('PU Agent', 'agent1@gmail.com', 'password123'),
-                          _buildDemoAccount('Party Agent', 'agent2@gmail.com', 'password123'),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _buildDemoAccount('Observer', 'observer@gmail.com', 'password123'),
-                          _buildDemoAccount('Volunteer', 'agent3@gmail.com', 'password123'),
+                          _buildDemoChip('PU Agent', 'agent1@gmail.com'),
+                          _buildDemoChip('Party Agent', 'agent2@gmail.com'),
+                          _buildDemoChip('Observer', 'observer@gmail.com'),
+                          _buildDemoChip('Volunteer', 'agent3@gmail.com'),
                         ],
                       ),
                     ],
                   ),
                 ),
+                
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -318,33 +283,29 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildDemoAccount(String role, String email, String password) {
+  Widget _buildDemoChip(String role, String email) {
     return GestureDetector(
       onTap: () {
         setState(() {
           _emailController.text = email;
-          _passwordController.text = password;
+          _passwordController.text = 'password123';
         });
       },
-      child: Column(
-        children: [
-          Text(
-            role,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.gray700,
-            ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.primaryLight.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
+        ),
+        child: Text(
+          role,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: AppColors.primary,
           ),
-          const SizedBox(height: 2),
-          Text(
-            email,
-            style: const TextStyle(
-              fontSize: 10,
-              color: AppColors.gray500,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
