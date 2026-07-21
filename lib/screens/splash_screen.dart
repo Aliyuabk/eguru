@@ -17,6 +17,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -37,10 +38,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     
     _animationController.forward();
     
-    // Navigate after splash
-    Future.delayed(const Duration(seconds: 3), () {
-      _navigateToNext();
-    });
+    // Wait for auth to complete and splash animation
+    _checkAuthAndNavigate();
   }
 
   @override
@@ -49,22 +48,33 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     super.dispose();
   }
 
-  void _navigateToNext() async {
+  Future<void> _checkAuthAndNavigate() async {
+    // Wait for auth provider to initialize
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    await authProvider.checkAuthStatus();
     
-    if (mounted) {
-      if (authProvider.isAuthenticated) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const DashboardScreen()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
-      }
+    // Wait for initialization
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    // Wait for splash animation to complete (minimum 2.5 seconds)
+    await Future.delayed(const Duration(seconds: 3));
+    
+    if (!mounted) return;
+    
+    setState(() {
+      _isLoading = false;
+    });
+    
+    // Navigate based on auth status
+    if (authProvider.isAuthenticated) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const DashboardScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
     }
   }
 
@@ -103,26 +113,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  Text(
-                    'Election Monitor',
-                    style: GoogleFonts.poppins(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '5G Election Guru',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w300,
-                      color: Colors.white70,
-                      letterSpacing: 4,
-                    ),
-                  ),
+                   
                   const SizedBox(height: 48),
                   SizedBox(
                     width: 40,

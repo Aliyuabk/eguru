@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class User {
   final int id;
   final int? tenantId;
@@ -18,6 +20,8 @@ class User {
   final int? twoFactorEnabled;
   final String? token;
   final String status;
+  final String? createdAt;
+  final String? updatedAt;
   
   User({
     required this.id,
@@ -39,6 +43,8 @@ class User {
     this.twoFactorEnabled,
     this.token,
     this.status = 'active',
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -62,6 +68,8 @@ class User {
       twoFactorEnabled: json['two_factor_enabled'],
       token: json['token'],
       status: json['status'] ?? 'active',
+      createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
     );
   }
 
@@ -86,28 +94,69 @@ class User {
       'two_factor_enabled': twoFactorEnabled,
       'token': token,
       'status': status,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
     };
   }
   
+  // Role Checkers
   bool get isPuAgent => roleLevel == 'pu_agent';
   bool get isPartyAgent => roleLevel == 'party_agent';
   bool get isObserver => roleLevel == 'observer';
   bool get isVolunteer => roleLevel == 'volunteer';
   bool get isCoordinator => roleLevel == 'lga' || roleLevel == 'ward' || roleLevel == 'state';
   bool get isSuperAdmin => roleLevel == 'super_admin';
+  bool get isClientAdmin => roleLevel == 'client_admin';
+  bool get isNational => roleLevel == 'national';
+  bool get isSenatorial => roleLevel == 'senatorial';
+  bool get isFederalConstituency => roleLevel == 'federal_constituency';
+  
+  // Status Checkers
+  bool get isActive => status == 'active';
+  bool get isSuspended => status == 'suspended';
+  bool get isPending => status == 'pending';
+  bool get isArchived => status == 'archived';
+  
+  // Display Helpers
+  String get displayName => fullName.isNotEmpty ? fullName : '$firstName $lastName';
+  String get initials => (firstName.isNotEmpty ? firstName[0] : '') + 
+                          (lastName.isNotEmpty ? lastName[0] : '');
+  String get roleDisplayName {
+    switch (roleLevel) {
+      case 'pu_agent': return 'Polling Unit Agent';
+      case 'party_agent': return 'Party Agent';
+      case 'observer': return 'Observer';
+      case 'volunteer': return 'Volunteer';
+      case 'lga': return 'LGA Coordinator';
+      case 'ward': return 'Ward Coordinator';
+      case 'state': return 'State Coordinator';
+      case 'national': return 'National Coordinator';
+      case 'super_admin': return 'Super Administrator';
+      case 'client_admin': return 'Client Administrator';
+      default: return roleName ?? 'User';
+    }
+  }
+  
+  String get tenantDisplayName => tenantName ?? 'No Tenant';
 }
+
+// ============================================================
+// LOGIN RESPONSE
+// ============================================================
 
 class LoginResponse {
   final bool success;
   final String? message;
   final User? user;
   final String? token;
+  final bool? requires2fa;
   
   LoginResponse({
     required this.success,
     this.message,
     this.user,
     this.token,
+    this.requires2fa,
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
@@ -116,6 +165,7 @@ class LoginResponse {
       message: json['message'],
       user: json['user'] != null ? User.fromJson(json['user']) : null,
       token: json['token'],
+      requires2fa: json['requires_2fa'],
     );
   }
 
@@ -125,9 +175,14 @@ class LoginResponse {
       'message': message,
       'user': user?.toJson(),
       'token': token,
+      'requires_2fa': requires2fa,
     };
   }
 }
+
+// ============================================================
+// FORGOT PASSWORD RESPONSE
+// ============================================================
 
 class ForgotPasswordResponse {
   final bool success;
@@ -150,5 +205,229 @@ class ForgotPasswordResponse {
       'success': success,
       'message': message,
     };
+  }
+}
+
+// ============================================================
+// CHANGE PASSWORD RESPONSE
+// ============================================================
+
+class ChangePasswordResponse {
+  final bool success;
+  final String? message;
+  
+  ChangePasswordResponse({
+    required this.success,
+    this.message,
+  });
+
+  factory ChangePasswordResponse.fromJson(Map<String, dynamic> json) {
+    return ChangePasswordResponse(
+      success: json['success'] ?? false,
+      message: json['message'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      'message': message,
+    };
+  }
+}
+
+// ============================================================
+// USER UPDATE REQUEST
+// ============================================================
+
+class UserUpdateRequest {
+  final String? firstName;
+  final String? lastName;
+  final String? phone;
+  final String? gender;
+  final String? dateOfBirth;
+  final String? residentialAddress;
+  final String? emergencyContactName;
+  final String? emergencyContactPhone;
+  
+  UserUpdateRequest({
+    this.firstName,
+    this.lastName,
+    this.phone,
+    this.gender,
+    this.dateOfBirth,
+    this.residentialAddress,
+    this.emergencyContactName,
+    this.emergencyContactPhone,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'first_name': firstName,
+      'last_name': lastName,
+      'phone': phone,
+      'gender': gender,
+      'date_of_birth': dateOfBirth,
+      'residential_address': residentialAddress,
+      'emergency_contact_name': emergencyContactName,
+      'emergency_contact_phone': emergencyContactPhone,
+    };
+  }
+}
+
+// ============================================================
+// USER LIST RESPONSE
+// ============================================================
+
+class UserListResponse {
+  final bool success;
+  final String? message;
+  final List<User> users;
+  final int total;
+  
+  UserListResponse({
+    required this.success,
+    this.message,
+    this.users = const [],
+    this.total = 0,
+  });
+
+  factory UserListResponse.fromJson(Map<String, dynamic> json) {
+    final usersList = json['users'] as List? ?? [];
+    return UserListResponse(
+      success: json['success'] ?? false,
+      message: json['message'],
+      users: usersList.map((e) => User.fromJson(e)).toList(),
+      total: json['total'] ?? usersList.length,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      'message': message,
+      'users': users.map((e) => e.toJson()).toList(),
+      'total': total,
+    };
+  }
+}
+
+// ============================================================
+// USER ROLE HELPERS
+// ============================================================
+
+class UserRole {
+  static const String superAdmin = 'super_admin';
+  static const String clientAdmin = 'client_admin';
+  static const String national = 'national';
+  static const String state = 'state';
+  static const String senatorial = 'senatorial';
+  static const String federalConstituency = 'federal_constituency';
+  static const String lga = 'lga';
+  static const String ward = 'ward';
+  static const String puAgent = 'pu_agent';
+  static const String partyAgent = 'party_agent';
+  static const String observer = 'observer';
+  static const String volunteer = 'volunteer';
+  
+  static const Map<String, String> displayNames = {
+    superAdmin: 'Super Administrator',
+    clientAdmin: 'Client Administrator',
+    national: 'National Coordinator',
+    state: 'State Coordinator',
+    senatorial: 'Senatorial Coordinator',
+    federalConstituency: 'Federal Constituency Coordinator',
+    lga: 'LGA Coordinator',
+    ward: 'Ward Coordinator',
+    puAgent: 'Polling Unit Agent',
+    partyAgent: 'Party Agent',
+    observer: 'Observer',
+    volunteer: 'Volunteer',
+  };
+  
+  static const Map<String, IconData> icons = {
+    superAdmin: Icons.admin_panel_settings,
+    clientAdmin: Icons.business,
+    national: Icons.public,
+    state: Icons.place,
+    senatorial: Icons.map,
+    federalConstituency: Icons.location_city,
+    lga: Icons.apartment,
+    ward: Icons.people_alt,
+    puAgent: Icons.assignment_ind,
+    partyAgent: Icons.how_to_vote,
+    observer: Icons.visibility,
+    volunteer: Icons.volunteer_activism,
+  };
+  
+  static const Map<String, Color> colors = {
+    superAdmin: Color(0xFF7C3AED),
+    clientAdmin: Color(0xFF2563EB),
+    national: Color(0xFF1F2937),
+    state: Color(0xFF0891B2),
+    senatorial: Color(0xFF6D28D9),
+    federalConstituency: Color(0xFF059669),
+    lga: Color(0xFFD97706),
+    ward: Color(0xFF0D9488),
+    puAgent: Color(0xFF2563EB),
+    partyAgent: Color(0xFFDC2626),
+    observer: Color(0xFF7C3AED),
+    volunteer: Color(0xFF059669),
+  };
+  
+  static String getDisplayName(String role) {
+    return displayNames[role] ?? role;
+  }
+  
+  static IconData getIcon(String role) {
+    return icons[role] ?? Icons.person;
+  }
+  
+  static Color getColor(String role) {
+    return colors[role] ?? Colors.grey;
+  }
+}
+
+// ============================================================
+// USER STATUS HELPERS
+// ============================================================
+
+class UserStatus {
+  static const String active = 'active';
+  static const String suspended = 'suspended';
+  static const String pending = 'pending';
+  static const String archived = 'archived';
+  
+  static const Map<String, String> displayNames = {
+    active: 'Active',
+    suspended: 'Suspended',
+    pending: 'Pending',
+    archived: 'Archived',
+  };
+  
+  static const Map<String, Color> colors = {
+    active: Colors.green,
+    suspended: Colors.red,
+    pending: Colors.orange,
+    archived: Colors.grey,
+  };
+  
+  static const Map<String, IconData> icons = {
+    active: Icons.check_circle,
+    suspended: Icons.block,
+    pending: Icons.hourglass_empty,
+    archived: Icons.archive,
+  };
+  
+  static String getDisplayName(String status) {
+    return displayNames[status] ?? status;
+  }
+  
+  static Color getColor(String status) {
+    return colors[status] ?? Colors.grey;
+  }
+  
+  static IconData getIcon(String status) {
+    return icons[status] ?? Icons.circle;
   }
 }

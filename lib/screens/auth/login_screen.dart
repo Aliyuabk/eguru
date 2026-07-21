@@ -56,18 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const SizedBox(height: 20),
                 
-                // Back Button
-                InkWell(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.gray100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.arrow_back, size: 20),
-                  ),
-                ),
+               
                 
                 const SizedBox(height: 40),
                 
@@ -253,37 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
                 
                 // Demo Accounts
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.gray50,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.gray200),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Demo Accounts',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.gray700,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _buildDemoChip('PU Agent', 'agent1@gmail.com'),
-                          _buildDemoChip('Party Agent', 'agent2@gmail.com'),
-                          _buildDemoChip('Observer', 'observer@gmail.com'),
-                          _buildDemoChip('Volunteer', 'agent3@gmail.com'),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                
                 
                 const SizedBox(height: 20),
               ],

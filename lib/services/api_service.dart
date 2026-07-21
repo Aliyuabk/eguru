@@ -300,34 +300,34 @@ class ApiService {
   }
   
   Future<ForgotPasswordResponse> forgotPassword(String email) async {
-    try {
-      print('🟡 Forgot password request for: $email');
-      
-      final response = await _dio.request(
-        ApiConstants.forgotPassword,
-        options: Options(
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        ),
-        data: {'email': email.trim()},
-      );
-      
-      print('🟢 Forgot password response: ${response.data}');
-      
-      return ForgotPasswordResponse(
-        success: response.data['success'] ?? false,
-        message: response.data['message'],
-      );
-    } on DioException catch (e) {
-      print('🔴 Forgot password error: ${e.message}');
-      return ForgotPasswordResponse(
-        success: false,
-        message: e.response?.data['message'] ?? 'Request failed',
-      );
-    }
+  try {
+    print('🟡 Forgot password request for: $email');
+    
+    final response = await _dio.request(
+      ApiConstants.forgotPassword,
+      options: Options(
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      ),
+      data: {'email': email.trim()},
+    );
+    
+    print('🟢 Forgot password response: ${response.data}');
+    
+    return ForgotPasswordResponse(
+      success: response.data['success'] ?? false,
+      message: response.data['message'],
+    );
+  } on DioException catch (e) {
+    print('🔴 Forgot password error: ${e.message}');
+    return ForgotPasswordResponse(
+      success: false,
+      message: e.response?.data['message'] ?? 'Request failed. Please try again.',
+    );
   }
+}
   
 Future<bool> changePassword(String currentPassword, String newPassword) async {
   try {

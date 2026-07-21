@@ -17,6 +17,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   bool _isSubmitted = false;
+  String _message = '';
 
   @override
   void dispose() {
@@ -29,10 +30,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
     
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Forgot Password'),
+        title: Text(
+          'Forgot Password',
+          style: GoogleFonts.inter(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        foregroundColor: AppColors.gray800,
       ),
       body: SafeArea(
         child: Padding(
@@ -48,13 +57,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withOpacity(0.1),
+                    gradient: LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryDark],
+                    ),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.lock_reset,
                     size: 40,
-                    color: AppColors.primary,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -78,8 +89,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               Center(
                 child: Text(
                   _isSubmitted 
-                      ? 'We\'ve sent a password reset link to your email'
-                      : 'Enter your email address and we\'ll send you a link to reset your password',
+                      ? _message
+                      : 'Enter your email address and we\'ll send you a new password',
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     color: AppColors.gray500,
@@ -109,24 +120,55 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   },
                 ),
                 
+                const SizedBox(height: 8),
+                
+                // Info text
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.primaryLight.withOpacity(0.1)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: AppColors.primary, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'A new password will be sent to your email address',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: AppColors.gray600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
                 const SizedBox(height: 32),
                 
                 CustomButton(
-                  text: 'Send Reset Link',
+                  text: 'Send New Password',
                   onPressed: () async {
                     if (_formKey.currentState?.validate() ?? false) {
-                      final success = await authProvider.forgotPassword(
+                      final response = await authProvider.forgotPassword(
                         _emailController.text.trim(),
                       );
                       
-                      if (success) {
+                      if (response.success) {
                         setState(() {
                           _isSubmitted = true;
+                          _message = response.message ?? 'A new password has been sent to your email';
                         });
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(authProvider.error ?? 'Failed to send reset link'),
+                            content: Text(
+                              response.message ?? 'Failed to send password',
+                              style: GoogleFonts.inter(),
+                            ),
                             backgroundColor: AppColors.danger,
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(
@@ -165,10 +207,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'We\'ve sent a password reset link to ${_emailController.text}',
+                        'A new password has been sent to ${_emailController.text}',
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           color: AppColors.gray500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Please check your spam folder if you don\'t see it in your inbox.',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: AppColors.gray400,
                         ),
                         textAlign: TextAlign.center,
                       ),

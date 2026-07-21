@@ -32,7 +32,6 @@ class AuthProvider extends ChangeNotifier {
       final token = await _authService.getToken();
       
       if (_user != null && token != null && token.isNotEmpty) {
-        // Verify token is still valid
         final isValid = await _apiService.verifyToken();
         if (!isValid) {
           _user = null;
@@ -82,12 +81,10 @@ class AuthProvider extends ChangeNotifier {
   
   Future<void> logout() async {
     try {
-      // Call logout API
       await _apiService.logout();
     } catch (e) {
       print('Logout error: $e');
     } finally {
-      // Clear user data
       _user = null;
       await _authService.clearAuthData();
       _isLoading = false;
@@ -97,7 +94,8 @@ class AuthProvider extends ChangeNotifier {
     }
   }
   
-  Future<bool> forgotPassword(String email) async {
+  // Updated to return ForgotPasswordResponse
+  Future<ForgotPasswordResponse> forgotPassword(String email) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -106,12 +104,15 @@ class AuthProvider extends ChangeNotifier {
       final response = await _apiService.forgotPassword(email);
       _isLoading = false;
       notifyListeners();
-      return response.success;
+      return response;
     } catch (e) {
       _error = 'An error occurred: $e';
       _isLoading = false;
       notifyListeners();
-      return false;
+      return ForgotPasswordResponse(
+        success: false,
+        message: 'An error occurred: $e',
+      );
     }
   }
   
@@ -133,7 +134,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
   
-  // Check auth status method (public)
   Future<void> checkAuthStatus() async {
     await _checkAuthStatus();
   }
