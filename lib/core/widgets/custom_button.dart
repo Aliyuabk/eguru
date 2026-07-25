@@ -68,7 +68,7 @@ class CustomButton extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: type == ButtonType.outline
-            ? BorderSide(color: AppColors.primary)
+            ? const BorderSide(color: AppColors.primary)
             : BorderSide.none,
       ),
       textStyle: GoogleFonts.inter(
