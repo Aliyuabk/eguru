@@ -23,6 +23,18 @@ class User {
   final String? createdAt;
   final String? updatedAt;
   
+  // Jurisdiction fields
+  final String? jurisdictionType;
+  final int? jurisdictionId;
+  final int? wardId;
+  final int? lgaId;
+  final int? stateId;
+  final int? senatorialId;
+  final int? federalConstituencyId;
+  final String? puName;
+  final String? puCode;
+  final int? puId;
+  
   User({
     required this.id,
     this.tenantId,
@@ -45,6 +57,16 @@ class User {
     this.status = 'active',
     this.createdAt,
     this.updatedAt,
+    this.jurisdictionType,
+    this.jurisdictionId,
+    this.wardId,
+    this.lgaId,
+    this.stateId,
+    this.senatorialId,
+    this.federalConstituencyId,
+    this.puName,
+    this.puCode,
+    this.puId,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -70,6 +92,16 @@ class User {
       status: json['status'] ?? 'active',
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
+      jurisdictionType: json['jurisdiction_type'],
+      jurisdictionId: json['jurisdiction_id'],
+      wardId: json['ward_id'],
+      lgaId: json['lga_id'],
+      stateId: json['state_id'],
+      senatorialId: json['senatorial_id'],
+      federalConstituencyId: json['federal_constituency_id'],
+      puName: json['pu_name'],
+      puCode: json['pu_code'],
+      puId: json['pu_id'],
     );
   }
 
@@ -96,6 +128,16 @@ class User {
       'status': status,
       'created_at': createdAt,
       'updated_at': updatedAt,
+      'jurisdiction_type': jurisdictionType,
+      'jurisdiction_id': jurisdictionId,
+      'ward_id': wardId,
+      'lga_id': lgaId,
+      'state_id': stateId,
+      'senatorial_id': senatorialId,
+      'federal_constituency_id': federalConstituencyId,
+      'pu_name': puName,
+      'pu_code': puCode,
+      'pu_id': puId,
     };
   }
   
@@ -104,12 +146,15 @@ class User {
   bool get isPartyAgent => roleLevel == 'party_agent';
   bool get isObserver => roleLevel == 'observer';
   bool get isVolunteer => roleLevel == 'volunteer';
-  bool get isCoordinator => roleLevel == 'lga' || roleLevel == 'ward' || roleLevel == 'state';
+  bool get isCoordinator => roleLevel == 'lga' || roleLevel == 'ward' || roleLevel == 'state' || roleLevel == 'national';
   bool get isSuperAdmin => roleLevel == 'super_admin';
   bool get isClientAdmin => roleLevel == 'client_admin';
   bool get isNational => roleLevel == 'national';
   bool get isSenatorial => roleLevel == 'senatorial';
   bool get isFederalConstituency => roleLevel == 'federal_constituency';
+  bool get isLgaCoordinator => roleLevel == 'lga';
+  bool get isWardCoordinator => roleLevel == 'ward';
+  bool get isStateCoordinator => roleLevel == 'state';
   
   // Status Checkers
   bool get isActive => status == 'active';
@@ -121,6 +166,7 @@ class User {
   String get displayName => fullName.isNotEmpty ? fullName : '$firstName $lastName';
   String get initials => (firstName.isNotEmpty ? firstName[0] : '') + 
                           (lastName.isNotEmpty ? lastName[0] : '');
+  
   String get roleDisplayName {
     switch (roleLevel) {
       case 'pu_agent': return 'Polling Unit Agent';
@@ -133,11 +179,34 @@ class User {
       case 'national': return 'National Coordinator';
       case 'super_admin': return 'Super Administrator';
       case 'client_admin': return 'Client Administrator';
+      case 'senatorial': return 'Senatorial Coordinator';
+      case 'federal_constituency': return 'Federal Constituency Coordinator';
       default: return roleName ?? 'User';
     }
   }
   
   String get tenantDisplayName => tenantName ?? 'No Tenant';
+  
+  String get jurisdictionDisplayName {
+    if (jurisdictionType == null) return 'No Jurisdiction';
+    switch (jurisdictionType) {
+      case 'pu': return 'Polling Unit';
+      case 'ward': return 'Ward';
+      case 'lga': return 'LGA';
+      case 'state': return 'State';
+      case 'senatorial': return 'Senatorial';
+      case 'federal_constituency': return 'Federal Constituency';
+      default: return jurisdictionType!;
+    }
+  }
+  
+  int get effectiveJurisdictionId {
+    if (jurisdictionId != null) return jurisdictionId!;
+    if (wardId != null) return wardId!;
+    if (lgaId != null) return lgaId!;
+    if (stateId != null) return stateId!;
+    return 0;
+  }
 }
 
 // ============================================================
@@ -385,6 +454,22 @@ class UserRole {
   
   static Color getColor(String role) {
     return colors[role] ?? Colors.grey;
+  }
+  
+  static List<String> getCoordinatorRoles() {
+    return [lga, ward, state, national, senatorial, federalConstituency];
+  }
+  
+  static List<String> getAgentRoles() {
+    return [puAgent, partyAgent, observer, volunteer];
+  }
+  
+  static bool isCoordinator(String role) {
+    return getCoordinatorRoles().contains(role);
+  }
+  
+  static bool isAgent(String role) {
+    return getAgentRoles().contains(role);
   }
 }
 

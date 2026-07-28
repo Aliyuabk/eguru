@@ -1,350 +1,337 @@
-import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../core/constants/api_constants.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/chat_model.dart';
+import '../models/user_model.dart';
 
 class ChatService {
-  final Dio _dio;
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  static const String baseUrl = 'https://eguruelction.kowagurutech.ng/api/endpoints';
   
-  ChatService() : _dio = Dio(BaseOptions(
-    baseUrl: ApiConstants.baseUrl,
-    connectTimeout: const Duration(seconds: 60),
-    receiveTimeout: const Duration(seconds: 60),
-    headers: {
+  // ============================================================
+  // HEADERS
+  // ============================================================
+  
+  Future<Map<String, String>> _getHeaders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+    
+    return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-    },
-    validateStatus: (status) {
-      // Accept all status codes to handle them manually
-      return status != null && status < 500;
-    },
-  )) {
-    _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = await _storage.read(key: 'auth_token');
-        if (token != null && token.isNotEmpty) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        print('🟡 Chat API Request: ${options.method} ${options.path}');
-        print('🟡 Request Data: ${options.data}');
-        return handler.next(options);
-      },
-      onResponse: (response, handler) {
-        print('🟢 Chat API Response Status: ${response.statusCode}');
-        print('🟢 Chat API Response Data: ${response.data}');
-        return handler.next(response);
-      },
-      onError: (error, handler) {
-        print('🔴 Chat API Error: ${error.message}');
-        print('🔴 Error Response: ${error.response?.data}');
-        print('🔴 Error Status: ${error.response?.statusCode}');
-        return handler.next(error);
-      },
-    ));
+      'Authorization': 'Bearer $token',
+    };
   }
-  
+
   // ============================================================
-  // FOR PU AGENT, OBSERVER, VOLUNTEER - GET THEIR COORDINATOR
-  // ============================================================
-  
-  Future<Contact?> getCoordinator() async {
-    try {
-      final response = await _dio.get(
-        '/chat/get_coordinator.php',
-      );
-      
-      print('🟡 Get coordinator response: ${response.data}');
-      
-      if (response.statusCode == 200 && 
-          response.data['success'] == true && 
-          response.data['coordinator'] != null) {
-        return Contact.fromJson(response.data['coordinator']);
-      }
-      
-      print('🔴 Get coordinator failed: ${response.data['message'] ?? 'Unknown error'}');
-      return null;
-      
-    } on DioException catch (e) {
-      print('🔴 Get coordinator Dio error: ${e.message}');
-      print('🔴 Response: ${e.response?.data}');
-      return null;
-    } catch (e) {
-      print('🔴 Get coordinator error: $e');
-      return null;
-    }
-  }
-  
-  // ============================================================
-  // FOR WARD COORDINATOR - GET CONTACTS BY ROLE
+  // CONTACTS / COORDINATOR
   // ============================================================
   
   Future<ChatContactsResponse> getContacts(int roleId) async {
     try {
-      final response = await _dio.get(
-        '/chat/get_contacts.php',
-        queryParameters: {
-          'role_id': roleId,
-        },
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/chat/get_contacts.php?role_id=$roleId'),
+        headers: headers,
       );
       
-      print('🟡 Get contacts response: ${response.data}');
-      
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        return ChatContactsResponse.fromJson(response.data);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('🟢 Chat API Response Data: $data');
+        return ChatContactsResponse.fromJson(data);
+      } else {
+        print('🔴 Get contacts failed: ${response.statusCode} - ${response.body}');
+        return ChatContactsResponse();
       }
-      
-      print('🔴 Get contacts failed: ${response.data['message'] ?? 'Unknown error'}');
-      return ChatContactsResponse();
-      
-    } on DioException catch (e) {
-      print('🔴 Get contacts Dio error: ${e.message}');
-      print('🔴 Response: ${e.response?.data}');
-      return ChatContactsResponse();
     } catch (e) {
       print('🔴 Get contacts error: $e');
       return ChatContactsResponse();
     }
   }
-  
-  // ============================================================
-  // GET MESSAGES BETWEEN TWO USERS
-  // ============================================================
-  
-  Future<List<ChatMessage>> getMessages(int contactId, {int limit = 50, int offset = 0}) async {
+
+  Future<Contact?> getCoordinator() async {
     try {
-      final response = await _dio.get(
-        '/chat/get_messages.php',
-        queryParameters: {
-          'contact_id': contactId,
-          'limit': limit,
-          'offset': offset,
-        },
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+      
+      print('🟡 Getting coordinator for agent...');
+      print('🟡 Token available: ${token.isNotEmpty}');
+      
+      // Simplified: Just call the coordinator endpoint directly
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/chat/get_coordinator.php'),
+        headers: headers,
       );
       
-      print('🟡 Get messages response: ${response.data}');
+      print('🟡 Chat API Request: GET /chat/get_coordinator.php');
+      print('🟢 Chat API Response Status: ${response.statusCode}');
       
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        final List<dynamic> data = response.data['messages'] ?? [];
-        return data.map((json) => ChatMessage.fromJson(json)).toList();
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('🟢 Chat API Response Data: $data');
+        print('🟡 Get coordinator response: $data');
+        
+        if (data['success'] == true && data['coordinator'] != null) {
+          return Contact.fromJson(data['coordinator']);
+        }
+        return null;
+      } else {
+        print('🔴 Get coordinator failed: ${response.statusCode} - ${response.body}');
+        return null;
       }
+    } catch (e) {
+      print('🔴 Get coordinator error: $e');
+      return null;
+    }
+  }
+
+  // ============================================================
+  // MESSAGES
+  // ============================================================
+  
+  Future<List<ChatMessage>> getMessages(int contactId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/chat/get_messages.php?contact_id=$contactId'),
+        headers: headers,
+      );
       
-      print('🔴 Get messages failed: ${response.data['message'] ?? 'Unknown error'}');
-      return [];
+      print('🟡 Chat API Request: GET /chat/get_messages.php');
+      print('🟡 Request Data: null');
+      print('🟢 Chat API Response Status: ${response.statusCode}');
       
-    } on DioException catch (e) {
-      print('🔴 Get messages Dio error: ${e.message}');
-      print('🔴 Response: ${e.response?.data}');
-      return [];
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('🟢 Chat API Response Data: $data');
+        print('🟡 Get messages response: $data');
+        
+        if (data['success'] == true && data['messages'] != null) {
+          final List messages = data['messages'];
+          return messages.map((e) => ChatMessage.fromJson(e)).toList();
+        }
+        return [];
+      } else {
+        print('🔴 Get messages failed: ${response.statusCode} - ${response.body}');
+        return [];
+      }
     } catch (e) {
       print('🔴 Get messages error: $e');
       return [];
     }
   }
-  
-  // ============================================================
-  // SEND A MESSAGE
-  // ============================================================
-  
-  Future<ChatMessage?> sendMessage(int receiverId, String content, String type, {String? mediaUrl}) async {
+
+  Future<List<ChatMessage>> getMessagesSince(int contactId, int lastMsgId) async {
     try {
-      print('🟡 Sending message to: $receiverId');
-      print('🟡 Content: ${content.length > 50 ? content.substring(0, 50) + '...' : content}');
-      print('🟡 Type: $type');
-      
-      final Map<String, dynamic> data = {
-        'receiver_id': receiverId,
-        'message': content,
-        'message_type': type,
-      };
-      
-      if (mediaUrl != null && mediaUrl.isNotEmpty) {
-        data['media_url'] = mediaUrl;
-      }
-      
-      final response = await _dio.post(
-        '/chat/send_message.php',
-        data: data,
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/chat/get_messages.php?contact_id=$contactId&last_msg_id=$lastMsgId'),
+        headers: headers,
       );
       
-      print('🟢 Send message response: ${response.data}');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['messages'] != null) {
+          final List messages = data['messages'];
+          return messages.map((e) => ChatMessage.fromJson(e)).toList();
+        }
+        return [];
+      }
+      return [];
+    } catch (e) {
+      print('🔴 Get messages since error: $e');
+      return [];
+    }
+  }
+
+  // ============================================================
+  // SEND MESSAGE
+  // ============================================================
+  
+  Future<ChatMessage?> sendMessage(
+    int receiverId,
+    String message,
+    String messageType, {
+    double? gpsLat,
+    double? gpsLng,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final requestData = {
+        'receiver_id': receiverId,
+        'message': message,
+        'message_type': messageType,
+        if (gpsLat != null) 'gps_lat': gpsLat.toString(),
+        if (gpsLng != null) 'gps_lng': gpsLng.toString(),
+      };
       
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        if (response.data['data'] != null) {
-          return ChatMessage.fromJson(response.data['data']);
+      print('🟡 Sending message to: $receiverId');
+      print('🟡 Content: $message');
+      print('🟡 Type: $messageType');
+      print('🟡 Chat API Request: POST /chat/send_message.php');
+      print('🟡 Request Data: $requestData');
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/chat/send_message.php'),
+        headers: headers,
+        body: jsonEncode(requestData),
+      );
+      
+      print('🟢 Chat API Response Status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('🟢 Chat API Response Data: $data');
+        print('🟢 Send message response: $data');
+        
+        if (data['success'] == true && data['data'] != null) {
+          return ChatMessage.fromJson(data['data']);
         }
         return null;
       } else {
-        final message = response.data['message'] ?? 'Failed to send message';
-        print('🔴 Send message failed: $message');
+        print('🔴 Send message failed: ${response.statusCode} - ${response.body}');
         return null;
       }
-      
-    } on DioException catch (e) {
-      print('🔴 Send message Dio error: ${e.message}');
-      print('🔴 Error Response: ${e.response?.data}');
-      return null;
     } catch (e) {
       print('🔴 Send message error: $e');
       return null;
     }
   }
-  
+
   // ============================================================
-  // UPLOAD FILE
+  // SEND FILE
   // ============================================================
   
-  Future<String?> uploadFile(String filePath, String type) async {
+  Future<ChatMessage?> sendFile(
+    int receiverId,
+    String filePath,
+    String fileName,
+    int fileSize,
+  ) async {
     try {
-      final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(filePath),
-        'type': type,
-      });
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
       
-      final response = await _dio.post(
-        '/chat/upload_file.php',
-        data: formData,
-        options: Options(
-          headers: {'Content-Type': 'multipart/form-data'},
-        ),
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/chat/upload_file.php'),
       );
       
-      print('🟡 Upload file response: ${response.data}');
+      request.headers['Authorization'] = 'Bearer $token';
+      request.fields['receiver_id'] = receiverId.toString();
+      request.fields['message_type'] = 'file';
+      request.fields['filename'] = fileName;
+      request.fields['filesize'] = fileSize.toString();
       
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        return response.data['url'];
+      final file = await http.MultipartFile.fromPath(
+        'attachment',
+        filePath,
+        contentType: MediaType('application', 'octet-stream'),
+      );
+      request.files.add(file);
+      
+      final response = await request.send();
+      final responseData = await response.stream.bytesToString();
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(responseData);
+        if (data['success'] == true && data['message'] != null) {
+          final fileInfo = {
+            'filename': fileName,
+            'filesize': fileSize,
+            'filetype': fileName.split('.').last,
+            'url': data['url'],
+          };
+          
+          return await sendMessage(
+            receiverId,
+            jsonEncode(fileInfo),
+            'file',
+          );
+        }
+        return null;
       }
-      
-      print('🔴 Upload file failed: ${response.data['message'] ?? 'Unknown error'}');
-      return null;
-      
-    } on DioException catch (e) {
-      print('🔴 Upload file Dio error: ${e.message}');
       return null;
     } catch (e) {
-      print('🔴 Upload file error: $e');
+      print('🔴 Send file error: $e');
       return null;
     }
   }
-  
+
   // ============================================================
-  // MARK MESSAGES AS READ
+  // SEND IMAGE
+  // ============================================================
+  
+  Future<ChatMessage?> sendImage(
+    int receiverId,
+    String imagePath,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+      
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/chat/upload_file.php'),
+      );
+      
+      request.headers['Authorization'] = 'Bearer $token';
+      request.fields['receiver_id'] = receiverId.toString();
+      request.fields['message_type'] = 'image';
+      
+      final file = await http.MultipartFile.fromPath(
+        'attachment',
+        imagePath,
+        contentType: MediaType('image', 'jpeg'),
+      );
+      request.files.add(file);
+      
+      final response = await request.send();
+      final responseData = await response.stream.bytesToString();
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(responseData);
+        if (data['success'] == true && data['message'] != null) {
+          return await sendMessage(
+            receiverId,
+            '',
+            'image',
+          );
+        }
+        return null;
+      }
+      return null;
+    } catch (e) {
+      print('🔴 Send image error: $e');
+      return null;
+    }
+  }
+
+  // ============================================================
+  // MARK AS READ
   // ============================================================
   
   Future<bool> markAsRead(int contactId) async {
     try {
-      final response = await _dio.post(
-        '/chat/mark_read.php',
-        data: {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/chat/mark_read.php'),
+        headers: headers,
+        body: jsonEncode({
           'contact_id': contactId,
-        },
+        }),
       );
       
-      print('🟡 Mark as read response: ${response.data}');
-      
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        return true;
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
       }
-      
-      print('🔴 Mark as read failed: ${response.data['message'] ?? 'Unknown error'}');
-      return false;
-      
-    } on DioException catch (e) {
-      print('🔴 Mark as read Dio error: ${e.message}');
       return false;
     } catch (e) {
       print('🔴 Mark as read error: $e');
       return false;
     }
-  }
-  
-  // ============================================================
-  // GET UNREAD COUNT
-  // ============================================================
-  
-  Future<int> getUnreadCount() async {
-    try {
-      final response = await _dio.get(
-        '/chat/get_unread_count.php',
-      );
-      
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        return response.data['unread_count'] ?? 0;
-      }
-      return 0;
-      
-    } catch (e) {
-      print('🔴 Get unread count error: $e');
-      return 0;
-    }
-  }
-  
-  // ============================================================
-  // CREATE OR GET CHAT ROOM
-  // ============================================================
-  
-  Future<int?> getOrCreateRoom(int contactId) async {
-    try {
-      final response = await _dio.post(
-        '/chat/get_room.php',
-        data: {
-          'contact_id': contactId,
-        },
-      );
-      
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        return response.data['room_id'];
-      }
-      return null;
-      
-    } catch (e) {
-      print('🔴 Get room error: $e');
-      return null;
-    }
-  }
-  
-  // ============================================================
-  // CHECK IF COORDINATOR EXISTS
-  // ============================================================
-  
-  Future<bool> hasCoordinator() async {
-    try {
-      final response = await _dio.get(
-        '/chat/get_coordinator.php',
-      );
-      
-      if (response.statusCode == 200 && 
-          response.data['success'] == true && 
-          response.data['coordinator'] != null) {
-        return true;
-      }
-      return false;
-      
-    } catch (e) {
-      print('🔴 Has coordinator error: $e');
-      return false;
-    }
-  }
-  
-  // ============================================================
-  // GET COORDINATOR WITH RETRY
-  // ============================================================
-  
-  Future<Contact?> getCoordinatorWithRetry({int maxRetries = 3}) async {
-    for (int attempt = 1; attempt <= maxRetries; attempt++) {
-      print('🟡 Attempt $attempt of $maxRetries to get coordinator');
-      
-      final coordinator = await getCoordinator();
-      if (coordinator != null) {
-        return coordinator;
-      }
-      
-      if (attempt < maxRetries) {
-        await Future.delayed(Duration(seconds: attempt * 2));
-      }
-    }
-    
-    print('🔴 Failed to get coordinator after $maxRetries attempts');
-    return null;
   }
 }
