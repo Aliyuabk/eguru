@@ -1,6 +1,6 @@
 class ApiConstants {
   // Use the correct base URL
-  static const String baseUrl = 'https://eguruelction.kowagurutech.ng/api/endpoints';
+  static const String baseUrl = 'https://eguruelection.kowagurutech.ng/api/endpoints';
   
   // Auth endpoints - ensure proper paths
   static const String login = '/auth/login.php';
