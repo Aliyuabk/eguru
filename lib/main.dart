@@ -1,3 +1,4 @@
+// main.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/constants/app_theme.dart';
@@ -5,10 +6,24 @@ import 'providers/auth_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/common/dashboard_screen.dart';
 import 'screens/auth/login_screen.dart';
+import 'services/permission_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Request essential permissions on app start
+  _requestPermissions();
+  
   runApp(const MyApp());
+}
+
+void _requestPermissions() async {
+  try {
+    final permissions = await PermissionService.initializePermissions();
+    print('📱 Permissions initialized: $permissions');
+  } catch (e) {
+    print('🔴 Failed to initialize permissions: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {

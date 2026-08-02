@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:biometric_storage/biometric_storage.dart';
 
 class FingerprintService {
   static final LocalAuthentication _localAuth = LocalAuthentication();
@@ -16,8 +15,14 @@ class FingerprintService {
   // Check if device supports fingerprint
   static Future<bool> isFingerprintAvailable() async {
     try {
+      // Check if device can check biometrics
       final bool isAvailable = await _localAuth.canCheckBiometrics;
+      
+      // Check if device supports biometrics
       final bool isDeviceSupported = await _localAuth.isDeviceSupported();
+      
+      print('🟢 Fingerprint available: $isAvailable, Device supported: $isDeviceSupported');
+      
       return isAvailable && isDeviceSupported;
     } catch (e) {
       print('🔴 Fingerprint availability check failed: $e');
@@ -90,6 +95,7 @@ class FingerprintService {
   // Authenticate with fingerprint
   static Future<bool> authenticateWithFingerprint({
     required String reason,
+    bool stickyAuth = true,
   }) async {
     try {
       final bool isAvailable = await isFingerprintAvailable();
@@ -98,14 +104,17 @@ class FingerprintService {
         return false;
       }
       
+      print('🟢 Starting fingerprint authentication...');
+      
       final bool authenticated = await _localAuth.authenticate(
         localizedReason: reason,
-        options: const AuthenticationOptions(
-          stickyAuth: true,
+        options: AuthenticationOptions(
+          stickyAuth: stickyAuth,
           biometricOnly: true,
         ),
       );
       
+      print('🟢 Fingerprint authentication result: $authenticated');
       return authenticated;
     } catch (e) {
       print('🔴 Fingerprint authentication failed: $e');
@@ -125,6 +134,7 @@ class FingerprintService {
       );
       
       if (!authenticated) {
+        print('🔴 User cancelled fingerprint enrollment');
         return false;
       }
       
@@ -133,6 +143,7 @@ class FingerprintService {
       await _storage.write(key: _userNameKey, value: name);
       await _storage.write(key: _fingerprintKey, value: 'true');
       
+      print('🟢 Fingerprint enabled successfully for $email');
       return true;
     } catch (e) {
       print('🔴 Enable fingerprint failed: $e');
@@ -149,6 +160,7 @@ class FingerprintService {
       );
       
       if (!authenticated) {
+        print('🔴 User cancelled fingerprint disable');
         return false;
       }
       
@@ -157,6 +169,7 @@ class FingerprintService {
       await _storage.delete(key: _userNameKey);
       await _storage.delete(key: _fingerprintKey);
       
+      print('🟢 Fingerprint disabled successfully');
       return true;
     } catch (e) {
       print('🔴 Disable fingerprint failed: $e');
@@ -170,6 +183,7 @@ class FingerprintService {
       // Check if fingerprint is enabled
       final bool enabled = await isFingerprintEnabled();
       if (!enabled) {
+        print('🔴 Fingerprint not enabled');
         return null;
       }
       
@@ -178,19 +192,23 @@ class FingerprintService {
       final String? name = await getSavedUserName();
       
       if (email == null || name == null) {
+        print('🔴 Saved credentials not found');
         return null;
       }
       
       // Authenticate with fingerprint
       final bool authenticated = await authenticateWithFingerprint(
         reason: 'Login to your account with fingerprint',
+        stickyAuth: true,
       );
       
       if (!authenticated) {
+        print('🔴 Fingerprint authentication failed');
         return null;
       }
       
       // Return user data
+      print('🟢 Fingerprint login successful for $email');
       return {
         'email': email,
         'name': name,

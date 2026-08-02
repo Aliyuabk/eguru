@@ -10,30 +10,55 @@ class AuthProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   
+  // ============================================================
+  // PRIVATE STATE
+  // ============================================================
   User? _user;
   bool _isLoading = false;
   bool _isAuthenticated = false;
   bool _isInitialized = false;
   String? _error;
+  
+  // Fingerprint state
   bool _fingerprintAvailable = false;
   bool _fingerprintEnabled = false;
   String? _savedUserEmail;
   String? _savedUserName;
 
+  // ============================================================
+  // PUBLIC GETTERS
+  // ============================================================
   User? get user => _user;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
   bool get isInitialized => _isInitialized;
   String? get error => _error;
+  
+  // Fingerprint getters
   bool get fingerprintAvailable => _fingerprintAvailable;
   bool get fingerprintEnabled => _fingerprintEnabled;
   String? get savedUserEmail => _savedUserEmail;
   String? get savedUserName => _savedUserName;
+  
+  // User helper getters
+  String get userFullName => _user?.fullName ?? _user?.displayName ?? 'User';
+  String get userRole => _user?.roleDisplayName ?? 'Unknown Role';
+  String get userEmail => _user?.email ?? _savedUserEmail ?? '';
+  bool get isCoordinator => _user?.isCoordinator ?? false;
+  bool get isAgent => _user?.isPuAgent ?? false;
+  
+  bool hasRole(String role) => _user?.roleLevel == role;
 
+  // ============================================================
+  // CONSTRUCTOR
+  // ============================================================
   AuthProvider() {
     _initialize();
   }
 
+  // ============================================================
+  // INITIALIZATION
+  // ============================================================
   Future<void> _initialize() async {
     _isLoading = true;
     _isInitialized = false;
@@ -41,54 +66,11 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       // Check fingerprint availability and saved credentials
-      _fingerprintAvailable = await FingerprintService.isFingerprintAvailable();
-      _fingerprintEnabled = await FingerprintService.isFingerprintEnabled();
-      _savedUserEmail = await FingerprintService.getSavedUserEmail();
-      _savedUserName = await FingerprintService.getSavedUserName();
+      await _initializeFingerprintStatus();
       
       // Check if user is already logged in
-      final token = await _storage.read(key: 'auth_token');
-      final userDataStr = await _storage.read(key: 'user_data');
+      await _restoreUserSession();
       
-      if (token != null && token.isNotEmpty && userDataStr != null) {
-        try {
-          // Verify token
-          final isValid = await _apiService.verifyToken();
-          if (isValid) {
-            // Parse user data from string to Map
-            try {
-              final Map<String, dynamic> userMap = jsonDecode(userDataStr);
-              _user = User.fromJson(userMap);
-              _isAuthenticated = true;
-            } catch (e) {
-              print('🔴 Error parsing user data: $e');
-              // If parsing fails, try to handle it as a Map directly
-              try {
-                final Map<String, dynamic> userMap = Map<String, dynamic>.from(userDataStr as Map);
-                _user = User.fromJson(userMap);
-                _isAuthenticated = true;
-              } catch (e2) {
-                print('🔴 Failed to parse user data: $e2');
-                await _storage.delete(key: 'auth_token');
-                await _storage.delete(key: 'user_data');
-                _isAuthenticated = false;
-              }
-            }
-          } else {
-            // Token invalid, clear storage
-            await _storage.delete(key: 'auth_token');
-            await _storage.delete(key: 'user_data');
-            _isAuthenticated = false;
-          }
-        } catch (e) {
-          print('🔴 Token verification failed: $e');
-          await _storage.delete(key: 'auth_token');
-          await _storage.delete(key: 'user_data');
-          _isAuthenticated = false;
-        }
-      } else {
-        _isAuthenticated = false;
-      }
     } catch (e) {
       print('🔴 Initialization error: $e');
       _isAuthenticated = false;
@@ -99,38 +81,112 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> _initializeFingerprintStatus() async {
+    try {
+      _fingerprintAvailable = await FingerprintService.isFingerprintAvailable();
+      _fingerprintEnabled = await FingerprintService.isFingerprintEnabled();
+      _savedUserEmail = await FingerprintService.getSavedUserEmail();
+      _savedUserName = await FingerprintService.getSavedUserName();
+      
+      print('🟢 Fingerprint Status:');
+      print('   Available: $_fingerprintAvailable');
+      print('   Enabled: $_fingerprintEnabled');
+      print('   Saved Email: $_savedUserEmail');
+      print('   Saved Name: $_savedUserName');
+    } catch (e) {
+      print('🔴 Error checking fingerprint status: $e');
+    }
+  }
+
+  Future<void> _restoreUserSession() async {
+    final token = await _storage.read(key: 'auth_token');
+    final userDataStr = await _storage.read(key: 'user_data');
+    
+    if (token == null || token.isEmpty || userDataStr == null) {
+      _isAuthenticated = false;
+      return;
+    }
+
+    try {
+      // Verify token with server
+      final isValid = await _apiService.verifyToken();
+      
+      if (isValid) {
+        _user = await _parseUserData(userDataStr);
+        _isAuthenticated = true;
+        print('🟢 User session restored successfully');
+      } else {
+        print('🟡 Token invalid, clearing session');
+        await _clearSession();
+      }
+    } catch (e) {
+      print('🔴 Error restoring session: $e');
+      await _clearSession();
+    }
+  }
+
+  Future<User?> _parseUserData(String userDataStr) async {
+    try {
+      final Map<String, dynamic> userMap = jsonDecode(userDataStr);
+      return User.fromJson(userMap);
+    } catch (e) {
+      print('🔴 Error parsing user data: $e');
+      return null;
+    }
+  }
+
+  Future<void> _clearSession() async {
+    await _storage.delete(key: 'auth_token');
+    await _storage.delete(key: 'user_data');
+    _user = null;
+    _isAuthenticated = false;
+  }
+
+  // ============================================================
+  // AUTHENTICATION METHODS
+  // ============================================================
+
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
+      print('🟡 Attempting login for: $email');
+      
       final response = await _apiService.login(email, password);
       
-      if (response.success) {
+      if (response.success && response.user != null) {
         _user = response.user;
         _isAuthenticated = true;
         
-        // Save user data and token
-        if (_user != null) {
-          final userJson = jsonEncode(_user!.toJson());
-          await _storage.write(key: 'user_data', value: userJson);
-        }
-        if (response.token != null && response.token!.isNotEmpty) {
-          await _storage.write(key: 'auth_token', value: response.token);
-        }
+        // Save session
+        await _saveSession(response);
         
+        print('🟢 Login successful for: ${_user?.displayName}');
         return true;
       } else {
-        _error = response.message;
+        _error = response.message ?? 'Login failed';
+        print('🔴 Login failed: $_error');
         return false;
       }
     } catch (e) {
       _error = 'Login failed: ${e.toString()}';
+      print('🔴 Login error: $_error');
       return false;
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _saveSession(dynamic response) async {
+    if (_user != null) {
+      final userJson = jsonEncode(_user!.toJson());
+      await _storage.write(key: 'user_data', value: userJson);
+    }
+    if (response.token != null && response.token!.isNotEmpty) {
+      await _storage.write(key: 'auth_token', value: response.token);
     }
   }
 
@@ -140,48 +196,42 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      print('🟡 Attempting fingerprint login...');
+      
+      // Authenticate with fingerprint
       final result = await FingerprintService.loginWithFingerprint();
       
       if (result == null) {
         _error = 'Fingerprint authentication failed';
+        print('🔴 $_error');
         return false;
       }
       
-      // Get saved token and user data
+      // Try to restore session
       final token = await _storage.read(key: 'auth_token');
       final userDataStr = await _storage.read(key: 'user_data');
       
       if (token != null && token.isNotEmpty && userDataStr != null) {
-        try {
-          final isValid = await _apiService.verifyToken();
-          if (isValid) {
-            try {
-              final Map<String, dynamic> userMap = jsonDecode(userDataStr);
-              _user = User.fromJson(userMap);
-              _isAuthenticated = true;
-              return true;
-            } catch (e) {
-              print('🔴 Error parsing user data: $e');
-            }
+        final isValid = await _apiService.verifyToken();
+        if (isValid) {
+          _user = await _parseUserData(userDataStr);
+          if (_user != null) {
+            _isAuthenticated = true;
+            print('🟢 Fingerprint login successful for: ${_user?.displayName}');
+            return true;
           }
-        } catch (e) {
-          print('🔴 Token verification failed: $e');
         }
       }
       
-      // If token expired or not found, try to login with saved email
-      final savedEmail = await FingerprintService.getSavedUserEmail();
-      if (savedEmail != null) {
-        // You might want to store password securely as well
-        // For now, we'll return true but the user will need to re-enter password
-        // after fingerprint verification
-        return true;
-      }
-      
-      _error = 'Fingerprint login failed';
+      // If session not valid, but fingerprint was verified
+      // The user will need to re-enter password
+      print('🟡 Fingerprint verified but session expired. Please login with password.');
+      _error = 'Session expired. Please login with password.';
       return false;
+      
     } catch (e) {
       _error = 'Fingerprint login failed: ${e.toString()}';
+      print('🔴 $_error');
       return false;
     } finally {
       _isLoading = false;
@@ -189,10 +239,39 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> logout() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      print('🟡 Logging out...');
+      await _apiService.logout();
+      await _clearSession();
+      print('🟢 Logout successful');
+    } catch (e) {
+      print('🔴 Logout error: $e');
+      // Still clear local session
+      await _clearSession();
+    } finally {
+      _user = null;
+      _isAuthenticated = false;
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ============================================================
+  // PASSWORD MANAGEMENT
+  // ============================================================
+
   Future<ForgotPasswordResponse> forgotPassword(String email) async {
     try {
-      return await _apiService.forgotPassword(email);
+      print('🟡 Requesting password reset for: $email');
+      final response = await _apiService.forgotPassword(email);
+      print('🟢 Password reset response: ${response.success}');
+      return response;
     } catch (e) {
+      print('🔴 Forgot password error: $e');
       return ForgotPasswordResponse(
         success: false,
         message: 'Error: ${e.toString()}',
@@ -206,13 +285,19 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      print('🟡 Changing password...');
       final success = await _apiService.changePassword(currentPassword, newPassword);
-      if (!success) {
+      
+      if (success) {
+        print('🟢 Password changed successfully');
+      } else {
         _error = 'Failed to change password';
+        print('🔴 $_error');
       }
       return success;
     } catch (e) {
       _error = 'Error changing password: ${e.toString()}';
+      print('🔴 $_error');
       return false;
     } finally {
       _isLoading = false;
@@ -220,32 +305,24 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> logout() async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      await _apiService.logout();
-    } catch (e) {
-      print('🔴 Logout error: $e');
-    } finally {
-      _user = null;
-      _isAuthenticated = false;
-      _isLoading = false;
-      await _storage.delete(key: 'auth_token');
-      await _storage.delete(key: 'user_data');
-      notifyListeners();
-    }
-  }
+  // ============================================================
+  // FINGERPRINT MANAGEMENT
+  // ============================================================
 
   Future<bool> enableFingerprint(String email, String name) async {
     try {
+      print('🟡 Enabling fingerprint for: $email');
+      
       final success = await FingerprintService.enableFingerprint(
         email: email,
         name: name,
       );
+      
       if (success) {
         await refreshFingerprintStatus();
+        print('🟢 Fingerprint enabled successfully');
+      } else {
+        print('🔴 Failed to enable fingerprint');
       }
       return success;
     } catch (e) {
@@ -256,9 +333,15 @@ class AuthProvider extends ChangeNotifier {
 
   Future<bool> disableFingerprint() async {
     try {
+      print('🟡 Disabling fingerprint...');
+      
       final success = await FingerprintService.disableFingerprint();
+      
       if (success) {
         await refreshFingerprintStatus();
+        print('🟢 Fingerprint disabled successfully');
+      } else {
+        print('🔴 Failed to disable fingerprint');
       }
       return success;
     } catch (e) {
@@ -268,26 +351,56 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> refreshFingerprintStatus() async {
-    _fingerprintEnabled = await FingerprintService.isFingerprintEnabled();
-    _savedUserEmail = await FingerprintService.getSavedUserEmail();
-    _savedUserName = await FingerprintService.getSavedUserName();
+    try {
+      _fingerprintEnabled = await FingerprintService.isFingerprintEnabled();
+      _savedUserEmail = await FingerprintService.getSavedUserEmail();
+      _savedUserName = await FingerprintService.getSavedUserName();
+      notifyListeners();
+    } catch (e) {
+      print('🔴 Refresh fingerprint status error: $e');
+    }
+  }
+
+  // ============================================================
+  // UTILITY METHODS
+  // ============================================================
+
+  bool shouldShowFingerprintLogin() {
+    return _fingerprintAvailable && 
+           _fingerprintEnabled && 
+           _savedUserName != null &&
+           _savedUserEmail != null;
+  }
+
+  String getFingerprintWelcomeMessage() {
+    if (shouldShowFingerprintLogin()) {
+      return 'Welcome Back, $_savedUserName!';
+    }
+    return 'Welcome Back!';
+  }
+
+  String getFingerprintSubtitle() {
+    if (shouldShowFingerprintLogin()) {
+      return 'Use fingerprint or enter your credentials';
+    }
+    return 'Sign in to continue to your dashboard';
+  }
+
+  // ============================================================
+  // ERROR HANDLING
+  // ============================================================
+
+  void clearError() {
+    _error = null;
     notifyListeners();
   }
 
-  // Helper method to get user's full name
-  String get userFullName => _user?.fullName ?? _user?.displayName ?? 'User';
-  
-  // Helper method to get user's role
-  String get userRole => _user?.roleDisplayName ?? 'Unknown Role';
-  
-  // Helper method to check if user has a specific role
-  bool hasRole(String role) {
-    return _user?.roleLevel == role;
+  // ============================================================
+  // DISPOSAL
+  // ============================================================
+  @override
+  void dispose() {
+    // Clean up resources if needed
+    super.dispose();
   }
-  
-  // Helper method to check if user is a coordinator
-  bool get isCoordinator => _user?.isCoordinator ?? false;
-  
-  // Helper method to check if user is an agent
-  bool get isAgent => _user?.isPuAgent ?? false;
 }
