@@ -1,50 +1,50 @@
+// core/widgets/custom_text_field.dart
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
 class CustomTextField extends StatefulWidget {
   final String label;
-  final String? hint;
+  final String hint;
   final TextEditingController? controller;
   final bool isPassword;
   final bool isEmail;
-  final bool isPhone;
-  final bool isNumber;
-  final bool isMultiline;
-  final int maxLines;
-  final int? maxLength;
-  final String? errorText;
-  final ValueChanged<String>? onChanged;
-  final VoidCallback? onEditingComplete;
-  final TextInputAction? textInputAction;
-  final FocusNode? focusNode;
+  final bool isRequired;
+  final bool obscureText;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
-  final bool isRequired;
-  final bool enabled;
-  final String? Function(String?)? validator; // Added validator
+  final String? Function(String?)? validator;
+  final TextInputType? keyboardType;
+  
+  // Add missing parameters
+  final bool isNumber;
+  final bool isMultiline;
+  final int? maxLines;
+  final int? minLines;
+  final bool readOnly;
+  final VoidCallback? onTap;
+  final Function(String)? onChanged;
 
   const CustomTextField({
     super.key,
     required this.label,
-    this.hint,
+    required this.hint,
     this.controller,
     this.isPassword = false,
     this.isEmail = false,
-    this.isPhone = false,
+    this.isRequired = false,
+    this.obscureText = false,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.validator,
+    this.keyboardType,
     this.isNumber = false,
     this.isMultiline = false,
     this.maxLines = 1,
-    this.maxLength,
-    this.errorText,
+    this.minLines = 1,
+    this.readOnly = false,
+    this.onTap,
     this.onChanged,
-    this.onEditingComplete,
-    this.textInputAction,
-    this.focusNode,
-    this.prefixIcon,
-    this.suffixIcon,
-    this.isRequired = false,
-    this.enabled = true,
-    this.validator,
   });
 
   @override
@@ -52,55 +52,53 @@ class CustomTextField extends StatefulWidget {
 }
 
 class _CustomTextFieldState extends State<CustomTextField> {
-  bool _obscureText = true;
-  String? _errorText;
+  late bool _obscureText;
+
+  @override
+  void initState() {
+    super.initState();
+    _obscureText = widget.isPassword && !widget.obscureText;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              widget.label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.gray700,
-              ),
-            ),
-            if (widget.isRequired) ...[
-              const SizedBox(width: 4),
-              const Text(
-                '*',
-                style: TextStyle(
-                  color: AppColors.danger,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ],
+        Text(
+          widget.label,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppColors.gray700,
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         TextFormField(
           controller: widget.controller,
-          obscureText: widget.isPassword ? _obscureText : false,
-          maxLines: widget.isMultiline ? widget.maxLines : 1,
-          maxLength: widget.maxLength,
-          enabled: widget.enabled,
-          focusNode: widget.focusNode,
-          textInputAction: widget.textInputAction ?? TextInputAction.done,
-          keyboardType: _getKeyboardType(),
+          obscureText: _obscureText,
+          readOnly: widget.readOnly,
+          onTap: widget.onTap,
           onChanged: widget.onChanged,
-          onEditingComplete: widget.onEditingComplete,
-          validator: widget.validator,
+          maxLines: widget.isMultiline ? (widget.maxLines ?? 3) : widget.maxLines,
+          minLines: widget.isMultiline ? (widget.minLines ?? 1) : widget.minLines,
+          keyboardType: widget.isNumber 
+              ? TextInputType.number 
+              : (widget.isEmail 
+                  ? TextInputType.emailAddress 
+                  : (widget.keyboardType ?? TextInputType.text)),
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            color: AppColors.gray900,
+          ),
           decoration: InputDecoration(
-            hintText: widget.hint ?? 'Enter ${widget.label.toLowerCase()}',
-            hintStyle: const TextStyle(color: AppColors.gray400),
-            errorText: widget.errorText ?? _errorText,
+            hintText: widget.hint,
+            hintStyle: GoogleFonts.inter(
+              fontSize: 14,
+              color: AppColors.gray400,
+            ),
             prefixIcon: widget.prefixIcon,
-            suffixIcon: widget.isPassword
+            suffixIcon: widget.isPassword 
                 ? IconButton(
                     icon: Icon(
                       _obscureText ? Icons.visibility_off : Icons.visibility,
@@ -114,7 +112,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   )
                 : widget.suffixIcon,
             filled: true,
-            fillColor: widget.enabled ? AppColors.gray50 : AppColors.gray100,
+            fillColor: widget.readOnly 
+                ? AppColors.gray100 
+                : AppColors.gray50,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -132,18 +132,14 @@ class _CustomTextFieldState extends State<CustomTextField> {
               borderSide: const BorderSide(color: AppColors.danger, width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            counterText: '',
+            errorStyle: GoogleFonts.inter(
+              fontSize: 12,
+              color: AppColors.danger,
+            ),
           ),
+          validator: widget.validator,
         ),
       ],
     );
-  }
-
-  TextInputType _getKeyboardType() {
-    if (widget.isEmail) return TextInputType.emailAddress;
-    if (widget.isPhone) return TextInputType.phone;
-    if (widget.isNumber) return TextInputType.number;
-    if (widget.isMultiline) return TextInputType.multiline;
-    return TextInputType.text;
   }
 }

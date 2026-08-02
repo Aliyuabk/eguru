@@ -8,6 +8,8 @@ class ApiConstants {
   static const String forgotPassword = '/auth/forgot_password.php';
   static const String changePassword = '/auth/change_password.php';
   static const String verifyToken = '/auth/verify_token.php';
+  static const String verifyFingerprint = '/auth/verify_fingerprint.php';
+  static const String registerFingerprint = '/auth/register_fingerprint.php';
   
   // Election endpoints
   static const String elections = '/elections/get_elections.php';

@@ -38,7 +38,7 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight.withOpacity(0.1),
+                      color: AppColors.primaryLight.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -103,7 +103,7 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.6),
+                                      color: Colors.black.withValues(alpha: 0.6),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
@@ -122,7 +122,7 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.6),
+                                      color: Colors.black.withValues(alpha: 0.6),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: const Text(
@@ -167,7 +167,7 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                         ),
                       ],
@@ -244,7 +244,7 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.1),
+                color: AppColors.success.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

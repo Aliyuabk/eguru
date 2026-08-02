@@ -48,9 +48,9 @@ class _PUChecklistScreenState extends State<PUChecklistScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight.withOpacity(0.1),
+              color: AppColors.primaryLight.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
+              border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +83,7 @@ class _PUChecklistScreenState extends State<PUChecklistScreen> {
               _getItemLabel(key),
               _getItemIcon(key),
             );
-          }).toList(),
+          }),
           
           const SizedBox(height: 24),
           
@@ -122,7 +122,7 @@ class _PUChecklistScreenState extends State<PUChecklistScreen> {
           height: 40,
           decoration: BoxDecoration(
             color: _checklistItems[key]!
-                ? AppColors.success.withOpacity(0.1)
+                ? AppColors.success.withValues(alpha: 0.1)
                 : AppColors.gray200,
             shape: BoxShape.circle,
           ),
@@ -150,7 +150,7 @@ class _PUChecklistScreenState extends State<PUChecklistScreen> {
               _checklistItems[key] = value;
             });
           },
-          activeColor: AppColors.primary,
+          activeThumbColor: AppColors.primary,
         ),
       ),
     );
@@ -167,7 +167,7 @@ class _PUChecklistScreenState extends State<PUChecklistScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.1),
+                color: AppColors.success.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

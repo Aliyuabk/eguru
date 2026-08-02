@@ -14,9 +14,9 @@ class PUMediaUploadScreen extends StatefulWidget {
 }
 
 class _PUMediaUploadScreenState extends State<PUMediaUploadScreen> {
-  List<XFile> _images = [];
-  List<XFile> _videos = [];
-  List<XFile> _documents = [];
+  final List<XFile> _images = [];
+  final List<XFile> _videos = [];
+  final List<XFile> _documents = [];
   bool _isUploading = false;
   bool _isSubmitted = false;
 
@@ -41,7 +41,7 @@ class _PUMediaUploadScreenState extends State<PUMediaUploadScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight.withOpacity(0.1),
+                      color: AppColors.primaryLight.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -125,7 +125,7 @@ class _PUMediaUploadScreenState extends State<PUMediaUploadScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
             ),
           ],
@@ -136,7 +136,7 @@ class _PUMediaUploadScreenState extends State<PUMediaUploadScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.primaryLight.withOpacity(0.1),
+                color: AppColors.primaryLight.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: AppColors.primary),
@@ -182,7 +182,7 @@ class _PUMediaUploadScreenState extends State<PUMediaUploadScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
           ),
         ],
@@ -273,7 +273,7 @@ class _PUMediaUploadScreenState extends State<PUMediaUploadScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.1),
+                color: AppColors.success.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

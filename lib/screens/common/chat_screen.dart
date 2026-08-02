@@ -652,7 +652,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                     decoration: BoxDecoration(
                       color: isSelected 
-                          ? Colors.white.withOpacity(0.3)
+                          ? Colors.white.withValues(alpha: 0.3)
                           : AppColors.gray200,
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -817,7 +817,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected 
-                          ? AppColors.primaryLight.withOpacity(0.1)
+                          ? AppColors.primaryLight.withValues(alpha: 0.1)
                           : Colors.transparent,
                       border: Border(
                         left: BorderSide(
@@ -898,7 +898,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                                     decoration: BoxDecoration(
-                                      color: roleColor.withOpacity(0.1),
+                                      color: roleColor.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -1066,7 +1066,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryLight.withOpacity(0.1),
+                          color: AppColors.primaryLight.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -1169,7 +1169,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -1260,7 +1260,7 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isSent ? Colors.transparent : AppColors.primaryLight.withOpacity(0.1),
+          color: isSent ? Colors.transparent : AppColors.primaryLight.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSent ? Colors.white24 : AppColors.primaryLight,
@@ -1303,7 +1303,7 @@ class _ChatScreenState extends State<ChatScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 4, left: 24),
                 child: Text(
-                  'Lat: ${lat!.toStringAsFixed(6)}, Lng: ${lng!.toStringAsFixed(6)}',
+                  'Lat: ${lat.toStringAsFixed(6)}, Lng: ${lng.toStringAsFixed(6)}',
                   style: GoogleFonts.inter(
                     fontSize: 10,
                     color: isSent ? Colors.white60 : AppColors.gray400,
@@ -1388,7 +1388,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: isSent ? Colors.white.withOpacity(0.1) : AppColors.gray50,
+        color: isSent ? Colors.white.withValues(alpha: 0.1) : AppColors.gray50,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isSent ? Colors.white24 : AppColors.gray200,
@@ -1400,7 +1400,7 @@ class _ChatScreenState extends State<ChatScreen> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: isSent ? Colors.white24 : AppColors.primaryLight.withOpacity(0.2),
+              color: isSent ? Colors.white24 : AppColors.primaryLight.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -1542,7 +1542,7 @@ class _ChatScreenState extends State<ChatScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),

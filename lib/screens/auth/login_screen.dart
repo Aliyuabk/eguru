@@ -1,3 +1,4 @@
+// screens/auth/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -22,6 +23,18 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _rememberMe = false;
   bool _isLoggingIn = false;
+  bool _isFingerprintLogin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFingerprintStatus();
+  }
+
+  Future<void> _checkFingerprintStatus() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.refreshFingerprintStatus();
+  }
 
   @override
   void dispose() {
@@ -44,6 +57,11 @@ class _LoginScreenState extends State<LoginScreen> {
       });
     }
     
+    // Show fingerprint login option if available
+    final bool showFingerprintLogin = authProvider.fingerprintAvailable && 
+                                       authProvider.fingerprintEnabled &&
+                                       authProvider.savedUserName != null;
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -55,8 +73,6 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                
-               
                 
                 const SizedBox(height: 40),
                 
@@ -80,8 +96,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
+                      
+                      // Welcome Back with User Name if fingerprint available
                       Text(
-                        'Welcome Back!',
+                        showFingerprintLogin && authProvider.savedUserName != null
+                            ? 'Welcome Back, ${authProvider.savedUserName}!'
+                            : 'Welcome Back!',
                         style: GoogleFonts.poppins(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -90,7 +110,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Sign in to continue to your dashboard',
+                        showFingerprintLogin 
+                            ? 'Use fingerprint or enter your credentials'
+                            : 'Sign in to continue to your dashboard',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           color: AppColors.gray500,
@@ -101,6 +123,42 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 
                 const SizedBox(height: 48),
+                
+                // Fingerprint Login Button (if available)
+                if (showFingerprintLogin) ...[
+                  _buildFingerprintLoginButton(authProvider),
+                  const SizedBox(height: 24),
+                  
+                  // Divider with OR text
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Divider(
+                          color: AppColors.gray300,
+                          thickness: 1,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'OR',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: AppColors.gray500,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Divider(
+                          color: AppColors.gray300,
+                          thickness: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                ],
                 
                 // Email Field
                 CustomTextField(
@@ -130,7 +188,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   isPassword: true,
                   isRequired: true,
+                  obscureText: _obscurePassword,
                   prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      color: AppColors.gray400,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
@@ -213,7 +283,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                       
                       if (success && mounted) {
-                        // Navigate to dashboard immediately
+                        // If remember me is checked and fingerprint is available
+                        if (_rememberMe && authProvider.fingerprintAvailable) {
+                          // Show option to enable fingerprint
+                          _showEnableFingerprintDialog(context, authProvider);
+                        }
+                        
+                        // Navigate to dashboard
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => const DashboardScreen()),
@@ -240,11 +316,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 
                 const SizedBox(height: 20),
-                
-                // Demo Accounts
-                
-                
-                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -253,29 +324,153 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildDemoChip(String role, String email) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _emailController.text = email;
-          _passwordController.text = 'password123';
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppColors.primaryLight.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
-        ),
-        child: Text(
-          role,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+  Widget _buildFingerprintLoginButton(AuthProvider authProvider) {
+    return Column(
+      children: [
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: AppColors.primaryLight.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: AppColors.primary,
+              width: 2,
+            ),
+          ),
+          child: IconButton(
+            icon: const Icon(
+              Icons.fingerprint,
+              size: 40,
+            ),
             color: AppColors.primary,
+            onPressed: _isFingerprintLogin ? null : () async {
+              setState(() {
+                _isFingerprintLogin = true;
+              });
+              
+              final success = await authProvider.loginWithFingerprint();
+              
+              setState(() {
+                _isFingerprintLogin = false;
+              });
+              
+              if (success && mounted) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                );
+              } else {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      authProvider.error ?? 'Fingerprint authentication failed',
+                      style: GoogleFonts.inter(),
+                    ),
+                    backgroundColor: AppColors.danger,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                );
+              }
+            },
           ),
         ),
+        const SizedBox(height: 12),
+        Text(
+          'Tap to login with fingerprint',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: AppColors.gray600,
+          ),
+        ),
+        if (_isFingerprintLogin) ...[
+          const SizedBox(height: 8),
+          SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.primary,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  void _showEnableFingerprintDialog(BuildContext context, AuthProvider authProvider) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Enable Fingerprint Login',
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'Would you like to enable fingerprint login for faster access next time?',
+          style: GoogleFonts.inter(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(
+              'Skip',
+              style: GoogleFonts.inter(
+                color: AppColors.gray600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              
+              final success = await authProvider.enableFingerprint(
+                authProvider.user?.email ?? '',
+                authProvider.user?.fullName ?? '',
+              );
+              
+              if (!mounted) return;
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    success 
+                        ? 'Fingerprint login enabled successfully!' 
+                        : 'Failed to enable fingerprint login',
+                    style: GoogleFonts.inter(),
+                  ),
+                  backgroundColor: success ? AppColors.success : AppColors.danger,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Enable',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

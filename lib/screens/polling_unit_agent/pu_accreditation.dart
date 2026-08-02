@@ -1,3 +1,4 @@
+// screens/polling_unit_agent/pu_accreditation.dart
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/custom_button.dart';
@@ -40,7 +41,7 @@ class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight.withOpacity(0.1),
+                        color: AppColors.primaryLight.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -67,7 +68,7 @@ class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                           ),
                         ],
@@ -85,12 +86,12 @@ class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
                     
                     const SizedBox(height: 24),
                     
-                    // Registered Voters
+                    // Registered Voters - FIXED: Use isNumber parameter
                     CustomTextField(
                       label: 'Registered Voters',
                       hint: 'Enter total registered voters',
                       controller: _registeredVotersController,
-                      isNumber: true,
+                      isNumber: true,  // This now works
                       isRequired: true,
                       prefixIcon: const Icon(Icons.people, color: AppColors.gray400),
                       validator: (value) {
@@ -106,12 +107,12 @@ class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
                     
                     const SizedBox(height: 16),
                     
-                    // Accredited Voters
+                    // Accredited Voters - FIXED: Use isNumber parameter
                     CustomTextField(
                       label: 'Accredited Voters',
                       hint: 'Enter number of accredited voters',
                       controller: _accreditedVotersController,
-                      isNumber: true,
+                      isNumber: true,  // This now works
                       isRequired: true,
                       prefixIcon: const Icon(Icons.person_add, color: AppColors.gray400),
                       validator: (value) {
@@ -183,7 +184,7 @@ class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.1),
+                color: AppColors.success.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

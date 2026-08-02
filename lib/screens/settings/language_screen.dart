@@ -77,9 +77,9 @@ class _LanguageScreenState extends State<LanguageScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight.withOpacity(0.05),
+              color: AppColors.primaryLight.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primaryLight.withOpacity(0.1)),
+              border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.1)),
             ),
             margin: const EdgeInsets.all(16),
             child: Row(
@@ -112,7 +112,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     color: isSelected 
-                        ? AppColors.primaryLight.withOpacity(0.05)
+                        ? AppColors.primaryLight.withValues(alpha: 0.05)
                         : Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(

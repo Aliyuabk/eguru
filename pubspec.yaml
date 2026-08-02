@@ -31,6 +31,10 @@ dependencies:
   shared_preferences: ^2.5.3
   flutter_secure_storage: ^9.2.4
 
+  # Biometric / Fingerprint
+  local_auth: ^2.3.0
+  biometric_storage: ^5.0.0
+
   # Location
   geolocator: ^14.0.2
   geocoding: ^4.0.0
@@ -70,6 +74,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/fonts/
 
 flutter_launcher_icons:
   android: true

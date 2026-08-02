@@ -63,7 +63,7 @@ class _PUVoteCountScreenState extends State<PUVoteCountScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight.withOpacity(0.1),
+                        color: AppColors.primaryLight.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -85,7 +85,7 @@ class _PUVoteCountScreenState extends State<PUVoteCountScreen> {
                     // Vote Count Fields
                     ..._parties.map((party) {
                       return _buildPartyVoteField(party);
-                    }).toList(),
+                    }),
                     
                     const SizedBox(height: 16),
                     
@@ -194,7 +194,7 @@ class _PUVoteCountScreenState extends State<PUVoteCountScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.1),
+                color: AppColors.success.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
