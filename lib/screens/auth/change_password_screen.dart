@@ -54,7 +54,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Info Card
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -81,44 +80,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               
               const SizedBox(height: 24),
               
-              // Current Password
-              TextFormField(
+              CustomTextField(
+                label: 'Current Password',
+                hint: 'Enter your current password',
                 controller: _currentPasswordController,
+                isPassword: true,
+                isRequired: true,
                 obscureText: _obscureCurrent,
-                decoration: InputDecoration(
-                  labelText: 'Current Password',
-                  hintText: 'Enter your current password',
-                  prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureCurrent ? Icons.visibility_off : Icons.visibility,
-                      color: AppColors.gray400,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureCurrent = !_obscureCurrent;
-                      });
-                    },
+                prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureCurrent ? Icons.visibility_off : Icons.visibility,
+                    color: AppColors.gray400,
                   ),
-                  filled: true,
-                  fillColor: AppColors.gray50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.danger, width: 2),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  onPressed: () {
+                    setState(() {
+                      _obscureCurrent = !_obscureCurrent;
+                    });
+                  },
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -133,44 +112,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               
               const SizedBox(height: 16),
               
-              // New Password
-              TextFormField(
+              CustomTextField(
+                label: 'New Password',
+                hint: 'Enter your new password',
                 controller: _newPasswordController,
+                isPassword: true,
+                isRequired: true,
                 obscureText: _obscureNew,
-                decoration: InputDecoration(
-                  labelText: 'New Password',
-                  hintText: 'Enter your new password',
-                  prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureNew ? Icons.visibility_off : Icons.visibility,
-                      color: AppColors.gray400,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureNew = !_obscureNew;
-                      });
-                    },
+                prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureNew ? Icons.visibility_off : Icons.visibility,
+                    color: AppColors.gray400,
                   ),
-                  filled: true,
-                  fillColor: AppColors.gray50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.danger, width: 2),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  onPressed: () {
+                    setState(() {
+                      _obscureNew = !_obscureNew;
+                    });
+                  },
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -192,44 +151,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               
               const SizedBox(height: 16),
               
-              // Confirm Password
-              TextFormField(
+              CustomTextField(
+                label: 'Confirm Password',
+                hint: 'Confirm your new password',
                 controller: _confirmPasswordController,
+                isPassword: true,
+                isRequired: true,
                 obscureText: _obscureConfirm,
-                decoration: InputDecoration(
-                  labelText: 'Confirm Password',
-                  hintText: 'Confirm your new password',
-                  prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirm ? Icons.visibility_off : Icons.visibility,
-                      color: AppColors.gray400,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureConfirm = !_obscureConfirm;
-                      });
-                    },
+                prefixIcon: const Icon(Icons.lock_outline, color: AppColors.gray400),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                    color: AppColors.gray400,
                   ),
-                  filled: true,
-                  fillColor: AppColors.gray50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.danger, width: 2),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  onPressed: () {
+                    setState(() {
+                      _obscureConfirm = !_obscureConfirm;
+                    });
+                  },
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -244,12 +183,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               
               const SizedBox(height: 24),
               
-              // Change Password Button
               CustomButton(
                 text: 'Change Password',
                 onPressed: _isSubmitted ? null : () async {
                   if (_formKey.currentState?.validate() ?? false) {
-                    // Check if new password is different from current
                     if (_newPasswordController.text == _currentPasswordController.text) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

@@ -5,6 +5,7 @@ import '../core/constants/app_colors.dart';
 import '../providers/auth_provider.dart';
 import 'auth/login_screen.dart';
 import 'common/dashboard_screen.dart';
+import 'common/web_redirect_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,7 +18,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -38,7 +38,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     
     _animationController.forward();
     
-    // Wait for auth to complete and splash animation
     _checkAuthAndNavigate();
   }
 
@@ -49,27 +48,24 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Wait for auth provider to initialize
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
-    // Wait for initialization
-    await Future.delayed(const Duration(milliseconds: 100));
-    
-    // Wait for splash animation to complete (minimum 2.5 seconds)
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 2));
     
     if (!mounted) return;
     
-    setState(() {
-      _isLoading = false;
-    });
-    
-    // Navigate based on auth status
     if (authProvider.isAuthenticated) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const DashboardScreen()),
-      );
+      if (authProvider.isMobileRole) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const WebRedirectScreen()),
+        );
+      }
     } else {
       Navigator.pushReplacement(
         context,
@@ -86,10 +82,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              AppColors.primary,
-              AppColors.primaryDark,
-            ],
+            colors: [AppColors.primary, AppColors.primaryDark],
           ),
         ),
         child: Center(
@@ -113,7 +106,23 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       color: Colors.white,
                     ),
                   ),
-                   
+                  const SizedBox(height: 24),
+                  Text(
+                    'Election Monitor',
+                    style: GoogleFonts.poppins(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Secure • Reliable • Real-time',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.white70,
+                    ),
+                  ),
                   const SizedBox(height: 48),
                   SizedBox(
                     width: 40,

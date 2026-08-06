@@ -28,44 +28,27 @@ class AppColors {
   static const Color gray800 = Color(0xFF1E293B);
   static const Color gray900 = Color(0xFF0F172A);
   
+  // Role Colors
+  static const Color puAgentColor = Color(0xFF2563EB);
+  static const Color partyAgentColor = Color(0xFFDC2626);
+  static const Color volunteerColor = Color(0xFF059669);
+  static const Color observerColor = Color(0xFF7C3AED);
+  
   // Background
   static const Color background = Color(0xFFF8FAFC);
   static const Color cardBackground = Colors.white;
   
   // Shadows
   static const double radius = 14.0;
-  static const double headerHeight = 64.0;
-  static const double sidebarWidth = 280.0;
-  static const double sidebarWidthCollapsed = 80.0;
-  
-  static const List<BoxShadow> shadow = [
-    BoxShadow(
-      color: Color(0x0D000000),
-      blurRadius: 20,
-      offset: Offset(0, 4),
-    ),
-  ];
-  
-  static const List<BoxShadow> shadowHover = [
-    BoxShadow(
-      color: Color(0x1A000000),
-      blurRadius: 30,
-      offset: Offset(0, 8),
-    ),
-  ];
 }
 
 // Role-based color mapping
 class RoleColors {
   static const Map<String, Color> roleColors = {
-    'pu_agent': Color(0xFF2563EB),
-    'party_agent': Color(0xFFDC2626),
-    'observer': Color(0xFF7C3AED),
-    'volunteer': Color(0xFF059669),
-    'ward_coordinator': Color(0xFFD97706),
-    'lga_coordinator': Color(0xFF7C3AED),
-    'state_coordinator': Color(0xFF0891B2),
-    'national': Color(0xFF1F2937),
+    'pu_agent': AppColors.puAgentColor,
+    'party_agent': AppColors.partyAgentColor,
+    'volunteer': AppColors.volunteerColor,
+    'observer': AppColors.observerColor,
   };
   
   static const Map<String, String> roleLabels = {
@@ -73,10 +56,6 @@ class RoleColors {
     'party_agent': 'Party Agent',
     'observer': 'Observer',
     'volunteer': 'Volunteer',
-    'ward_coordinator': 'Ward Coordinator',
-    'lga_coordinator': 'LGA Coordinator',
-    'state_coordinator': 'State Coordinator',
-    'national': 'National Coordinator',
   };
   
   static const Map<String, IconData> roleIcons = {
@@ -84,9 +63,21 @@ class RoleColors {
     'party_agent': Icons.how_to_vote,
     'observer': Icons.visibility,
     'volunteer': Icons.volunteer_activism,
-    'ward_coordinator': Icons.people_alt,
-    'lga_coordinator': Icons.apartment,
-    'state_coordinator': Icons.place,
-    'national': Icons.public,
   };
+  
+  static Color getColor(String role) {
+    return roleColors[role] ?? AppColors.primary;
+  }
+  
+  static String getLabel(String role) {
+    return roleLabels[role] ?? role;
+  }
+  
+  static IconData getIcon(String role) {
+    return roleIcons[role] ?? Icons.person;
+  }
+  
+  static bool isMobileRole(String role) {
+    return roleColors.containsKey(role);
+  }
 }

@@ -45,17 +45,9 @@ class VolunteerTasksScreen extends StatelessWidget {
   Widget _buildTaskCard(String title, String description, String location, String status) {
     Color statusColor;
     switch (status) {
-      case 'In Progress':
-        statusColor = AppColors.warning;
-        break;
-      case 'Completed':
-        statusColor = AppColors.success;
-        break;
-      case 'Pending':
-        statusColor = AppColors.info;
-        break;
-      default:
-        statusColor = AppColors.gray500;
+      case 'In Progress': statusColor = AppColors.warning; break;
+      case 'Completed': statusColor = AppColors.success; break;
+      default: statusColor = AppColors.info;
     }
 
     return Card(
@@ -69,13 +61,7 @@ class VolunteerTasksScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+                  child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -83,14 +69,7 @@ class VolunteerTasksScreen extends StatelessWidget {
                     color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
-                    status,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: Text(status, style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
@@ -101,18 +80,10 @@ class VolunteerTasksScreen extends StatelessWidget {
               children: [
                 Icon(Icons.location_on, size: 16, color: AppColors.gray400),
                 const SizedBox(width: 4),
-                Text(
-                  location,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.gray500,
-                  ),
-                ),
+                Text(location, style: const TextStyle(fontSize: 12, color: AppColors.gray500)),
                 const Spacer(),
                 TextButton(
-                  onPressed: () {
-                    // Update progress
-                  },
+                  onPressed: () {},
                   child: const Text('Update'),
                 ),
               ],

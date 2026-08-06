@@ -34,82 +34,74 @@ class _PUChecklistScreenState extends State<PUChecklistScreen> {
       ),
       body: _isSubmitted
           ? _buildSubmittedView()
-          : _buildChecklistForm(),
-    );
-  }
-
-  Widget _buildChecklistForm() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Info Card
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.info_outline, color: AppColors.primary),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Election Checklist',
-                      style: Theme.of(context).textTheme.titleMedium,
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Mark all activities as they are completed during the election process',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.info_outline, color: AppColors.primary),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Election Checklist',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Mark all activities as they are completed during the election process',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  ..._checklistItems.keys.map((key) {
+                    return _buildChecklistItem(
+                      key,
+                      _getItemLabel(key),
+                      _getItemIcon(key),
+                    );
+                  }),
+                  
+                  const SizedBox(height: 24),
+                  
+                  CustomButton(
+                    text: 'Submit Checklist',
+                    onPressed: _isSubmitting ? null : _submitChecklist,
+                    isLoading: _isSubmitting,
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  LinearProgressIndicator(
+                    value: _getProgress(),
+                    backgroundColor: AppColors.gray200,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${(_getProgress() * 100).round()}% completed',
+                    style: Theme.of(context).textTheme.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // Checklist Items
-          ..._checklistItems.keys.map((key) {
-            return _buildChecklistItem(
-              key,
-              _getItemLabel(key),
-              _getItemIcon(key),
-            );
-          }),
-          
-          const SizedBox(height: 24),
-          
-          // Submit Button
-          CustomButton(
-            text: 'Submit Checklist',
-            onPressed: _isSubmitting ? null : _submitChecklist,
-            isLoading: _isSubmitting,
-          ),
-          
-          const SizedBox(height: 8),
-          
-          // Progress
-          LinearProgressIndicator(
-            value: _getProgress(),
-            backgroundColor: AppColors.gray200,
-            color: AppColors.primary,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${(_getProgress() * 100).round()}% completed',
-            style: Theme.of(context).textTheme.bodySmall,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
     );
   }
 
@@ -202,39 +194,25 @@ class _PUChecklistScreenState extends State<PUChecklistScreen> {
 
   String _getItemLabel(String key) {
     switch (key) {
-      case 'materialsArrived':
-        return 'Election Materials Arrived';
-      case 'pollOpened':
-        return 'Poll Opened';
-      case 'accreditationStarted':
-        return 'Accreditation Started';
-      case 'votingStarted':
-        return 'Voting Started';
-      case 'countingStarted':
-        return 'Counting Started';
-      case 'pollClosed':
-        return 'Poll Closed';
-      default:
-        return '';
+      case 'materialsArrived': return 'Election Materials Arrived';
+      case 'pollOpened': return 'Poll Opened';
+      case 'accreditationStarted': return 'Accreditation Started';
+      case 'votingStarted': return 'Voting Started';
+      case 'countingStarted': return 'Counting Started';
+      case 'pollClosed': return 'Poll Closed';
+      default: return '';
     }
   }
 
   IconData _getItemIcon(String key) {
     switch (key) {
-      case 'materialsArrived':
-        return Icons.inventory;
-      case 'pollOpened':
-        return Icons.open_in_new;
-      case 'accreditationStarted':
-        return Icons.assignment_ind;
-      case 'votingStarted':
-        return Icons.how_to_vote;
-      case 'countingStarted':
-        return Icons.calculate;
-      case 'pollClosed':
-        return Icons.close;
-      default:
-        return Icons.check;
+      case 'materialsArrived': return Icons.inventory;
+      case 'pollOpened': return Icons.open_in_new;
+      case 'accreditationStarted': return Icons.assignment_ind;
+      case 'votingStarted': return Icons.how_to_vote;
+      case 'countingStarted': return Icons.calculate;
+      case 'pollClosed': return Icons.close;
+      default: return Icons.check;
     }
   }
 
@@ -248,7 +226,6 @@ class _PUChecklistScreenState extends State<PUChecklistScreen> {
       _isSubmitting = true;
     });
 
-    // Simulate API call
     Future.delayed(const Duration(seconds: 2), () {
       setState(() {
         _isSubmitting = false;

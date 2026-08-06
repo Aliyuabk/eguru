@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:flutter/material.dart';  // ✅ ADD THIS - fixes Colors.grey
 
 class User {
   final int id;
@@ -22,8 +23,6 @@ class User {
   final String status;
   final String? createdAt;
   final String? updatedAt;
-  
-  // Jurisdiction fields
   final String? jurisdictionType;
   final int? jurisdictionId;
   final int? wardId;
@@ -34,7 +33,8 @@ class User {
   final String? puName;
   final String? puCode;
   final int? puId;
-  
+  final int? electionId;
+
   User({
     required this.id,
     this.tenantId,
@@ -67,44 +67,104 @@ class User {
     this.puName,
     this.puCode,
     this.puId,
+    this.electionId,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'] ?? 0,
-      tenantId: json['tenant_id'],
-      userCode: json['user_code'] ?? '',
-      roleId: json['role_id'] ?? 0,
-      firstName: json['first_name'] ?? '',
-      lastName: json['last_name'] ?? '',
-      fullName: json['full_name'] ?? '',
-      email: json['email'],
-      phone: json['phone'],
-      avatar: json['avatar'],
-      photographUrl: json['photograph_url'],
-      gender: json['gender'],
-      dateOfBirth: json['date_of_birth'],
-      roleName: json['role_name'],
-      roleLevel: json['role_level'],
-      tenantName: json['tenant_name'],
-      twoFactorEnabled: json['two_factor_enabled'],
-      token: json['token'],
-      status: json['status'] ?? 'active',
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
-      jurisdictionType: json['jurisdiction_type'],
-      jurisdictionId: json['jurisdiction_id'],
-      wardId: json['ward_id'],
-      lgaId: json['lga_id'],
-      stateId: json['state_id'],
-      senatorialId: json['senatorial_id'],
-      federalConstituencyId: json['federal_constituency_id'],
-      puName: json['pu_name'],
-      puCode: json['pu_code'],
-      puId: json['pu_id'],
-    );
+  // ============================================================
+  // FACTORY METHODS WITH SAFE PARSING
+  // ============================================================
+
+  /// Safe integer parser - handles all possible input types
+  static int _safeInt(dynamic value, {int defaultValue = 0}) {
+    if (value == null) return defaultValue;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) {
+      final parsed = int.tryParse(value.trim());
+      return parsed ?? defaultValue;
+    }
+    if (value is bool) return value ? 1 : 0;
+    return defaultValue;
   }
 
+  /// Safe string parser
+  static String _safeString(dynamic value, {String defaultValue = ''}) {
+    if (value == null) return defaultValue;
+    if (value is String) return value.trim();
+    if (value is int || value is double || value is bool) {
+      return value.toString();
+    }
+    return defaultValue;
+  }
+
+  /// Safe boolean parser
+  static bool _safeBool(dynamic value, {bool defaultValue = false}) {
+    if (value == null) return defaultValue;
+    if (value is bool) return value;
+    if (value is int) return value == 1;
+    if (value is String) {
+      final cleaned = value.trim().toLowerCase();
+      if (cleaned == '1' || cleaned == 'true') return true;
+      if (cleaned == '0' || cleaned == 'false') return false;
+    }
+    return defaultValue;
+  }
+
+  /// Create User from JSON with comprehensive error handling
+  factory User.fromJson(Map<String, dynamic> json) {
+    try {
+      print('🟢 Parsing User from JSON...');
+      
+      // Log the raw data for debugging
+      if (json['id'] != null) {
+        print('🟢 User ID: ${json['id']} (${json['id'].runtimeType})');
+      }
+      if (json['role_level'] != null) {
+        print('🟢 Role Level: ${json['role_level']} (${json['role_level'].runtimeType})');
+      }
+
+      return User(
+        id: _safeInt(json['id']),
+        tenantId: _safeInt(json['tenant_id']),
+        userCode: _safeString(json['user_code']),
+        roleId: _safeInt(json['role_id']),
+        firstName: _safeString(json['first_name']),
+        lastName: _safeString(json['last_name']),
+        fullName: _safeString(json['full_name'], defaultValue: ''),
+        email: _safeString(json['email']),
+        phone: _safeString(json['phone']),
+        avatar: _safeString(json['avatar']),
+        photographUrl: _safeString(json['photograph_url']),
+        gender: _safeString(json['gender']),
+        dateOfBirth: _safeString(json['date_of_birth']),
+        roleName: _safeString(json['role_name']),
+        roleLevel: _safeString(json['role_level']),
+        tenantName: _safeString(json['tenant_name']),
+        twoFactorEnabled: _safeInt(json['two_factor_enabled']),
+        token: _safeString(json['token']),
+        status: _safeString(json['status'], defaultValue: 'active'),
+        createdAt: _safeString(json['created_at']),
+        updatedAt: _safeString(json['updated_at']),
+        jurisdictionType: _safeString(json['jurisdiction_type']),
+        jurisdictionId: _safeInt(json['jurisdiction_id']),
+        wardId: _safeInt(json['ward_id']),
+        lgaId: _safeInt(json['lga_id']),
+        stateId: _safeInt(json['state_id']),
+        senatorialId: _safeInt(json['senatorial_id']),
+        federalConstituencyId: _safeInt(json['federal_constituency_id']),
+        puName: _safeString(json['pu_name']),
+        puCode: _safeString(json['pu_code']),
+        puId: _safeInt(json['pu_id']),
+        electionId: _safeInt(json['election_id']),
+      );
+    } catch (e, stackTrace) {
+      print('🔴 ERROR in User.fromJson: $e');
+      print('🔴 Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  /// Convert User to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -138,15 +198,38 @@ class User {
       'pu_name': puName,
       'pu_code': puCode,
       'pu_id': puId,
+      'election_id': electionId,
     };
   }
-  
-  // Role Checkers
+
+  /// Convert to JSON string for storage
+  String toJsonString() {
+    return jsonEncode(toJson());
+  }
+
+  /// Create User from JSON string
+  static User fromJsonString(String jsonString) {
+    try {
+      final Map<String, dynamic> json = jsonDecode(jsonString);
+      return User.fromJson(json);
+    } catch (e) {
+      print('🔴 ERROR parsing User from JSON string: $e');
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // HELPER PROPERTIES
+  // ============================================================
+
   bool get isPuAgent => roleLevel == 'pu_agent';
   bool get isPartyAgent => roleLevel == 'party_agent';
   bool get isObserver => roleLevel == 'observer';
   bool get isVolunteer => roleLevel == 'volunteer';
-  bool get isCoordinator => roleLevel == 'lga' || roleLevel == 'ward' || roleLevel == 'state' || roleLevel == 'national';
+  bool get isCoordinator => [
+    'lga', 'ward', 'state', 'national', 'super_admin', 
+    'senatorial', 'federal_constituency'
+  ].contains(roleLevel);
   bool get isSuperAdmin => roleLevel == 'super_admin';
   bool get isClientAdmin => roleLevel == 'client_admin';
   bool get isNational => roleLevel == 'national';
@@ -155,18 +238,24 @@ class User {
   bool get isLgaCoordinator => roleLevel == 'lga';
   bool get isWardCoordinator => roleLevel == 'ward';
   bool get isStateCoordinator => roleLevel == 'state';
-  
-  // Status Checkers
+
+  bool get isMobileRole => [
+    'pu_agent', 'party_agent', 'observer', 'volunteer'
+  ].contains(roleLevel);
+
   bool get isActive => status == 'active';
   bool get isSuspended => status == 'suspended';
   bool get isPending => status == 'pending';
   bool get isArchived => status == 'archived';
-  
-  // Display Helpers
+
   String get displayName => fullName.isNotEmpty ? fullName : '$firstName $lastName';
-  String get initials => (firstName.isNotEmpty ? firstName[0] : '') + 
-                          (lastName.isNotEmpty ? lastName[0] : '');
   
+  String get initials {
+    final first = firstName.isNotEmpty ? firstName[0] : '';
+    final last = lastName.isNotEmpty ? lastName[0] : '';
+    return '$first$last'.toUpperCase();
+  }
+
   String get roleDisplayName {
     switch (roleLevel) {
       case 'pu_agent': return 'Polling Unit Agent';
@@ -184,28 +273,20 @@ class User {
       default: return roleName ?? 'User';
     }
   }
-  
-  String get tenantDisplayName => tenantName ?? 'No Tenant';
-  
-  String get jurisdictionDisplayName {
-    if (jurisdictionType == null) return 'No Jurisdiction';
-    switch (jurisdictionType) {
-      case 'pu': return 'Polling Unit';
-      case 'ward': return 'Ward';
-      case 'lga': return 'LGA';
-      case 'state': return 'State';
-      case 'senatorial': return 'Senatorial';
-      case 'federal_constituency': return 'Federal Constituency';
-      default: return jurisdictionType!;
-    }
+
+  String get redirectUrl {
+    return 'https://eguruelection.kowagurutech.ng/admin/dashboard.php';
   }
-  
-  int get effectiveJurisdictionId {
-    if (jurisdictionId != null) return jurisdictionId!;
-    if (wardId != null) return wardId!;
-    if (lgaId != null) return lgaId!;
-    if (stateId != null) return stateId!;
-    return 0;
+
+  // ✅ This now works because we imported 'package:flutter/material.dart'
+  Color get roleColor {
+    switch (roleLevel) {
+      case 'pu_agent': return const Color(0xFF2563EB);
+      case 'party_agent': return const Color(0xFFDC2626);
+      case 'observer': return const Color(0xFF7C3AED);
+      case 'volunteer': return const Color(0xFF059669);
+      default: return Colors.grey;
+    }
   }
 }
 
@@ -219,7 +300,7 @@ class LoginResponse {
   final User? user;
   final String? token;
   final bool? requires2fa;
-  
+
   LoginResponse({
     required this.success,
     this.message,
@@ -229,13 +310,45 @@ class LoginResponse {
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
-    return LoginResponse(
-      success: json['success'] ?? false,
-      message: json['message'],
-      user: json['user'] != null ? User.fromJson(json['user']) : null,
-      token: json['token'],
-      requires2fa: json['requires_2fa'],
-    );
+    try {
+      print('🟢 Parsing LoginResponse...');
+      print('🟢 Success: ${json['success']}');
+      print('🟢 Has User: ${json['user'] != null}');
+      print('🟢 Has Token: ${json['token'] != null}');
+
+      User? user;
+      if (json['user'] != null) {
+        try {
+          user = User.fromJson(json['user']);
+        } catch (e) {
+          print('🔴 Failed to parse user in LoginResponse: $e');
+          // Don't rethrow - we want to return a response even if user parsing fails
+        }
+      }
+
+      return LoginResponse(
+        success: json['success'] ?? false,
+        message: _safeString(json['message']),
+        user: user,
+        token: _safeString(json['token']),
+        requires2fa: json['requires_2fa'] ?? false,
+      );
+    } catch (e) {
+      print('🔴 ERROR in LoginResponse.fromJson: $e');
+      return LoginResponse(
+        success: false,
+        message: 'Failed to parse response: $e',
+      );
+    }
+  }
+
+  static String _safeString(dynamic value, {String defaultValue = ''}) {
+    if (value == null) return defaultValue;
+    if (value is String) return value.trim();
+    if (value is int || value is double || value is bool) {
+      return value.toString();
+    }
+    return defaultValue;
   }
 
   Map<String, dynamic> toJson() {
@@ -247,6 +360,25 @@ class LoginResponse {
       'requires_2fa': requires2fa,
     };
   }
+
+  /// Convert to JSON string for storage
+  String toJsonString() {
+    return jsonEncode(toJson());
+  }
+
+  /// Create LoginResponse from JSON string
+  static LoginResponse fromJsonString(String jsonString) {
+    try {
+      final Map<String, dynamic> json = jsonDecode(jsonString);
+      return LoginResponse.fromJson(json);
+    } catch (e) {
+      print('🔴 ERROR parsing LoginResponse from JSON string: $e');
+      return LoginResponse(
+        success: false,
+        message: 'Failed to parse stored session data: $e',
+      );
+    }
+  }
 }
 
 // ============================================================
@@ -256,7 +388,7 @@ class LoginResponse {
 class ForgotPasswordResponse {
   final bool success;
   final String? message;
-  
+
   ForgotPasswordResponse({
     required this.success,
     this.message,
@@ -265,7 +397,7 @@ class ForgotPasswordResponse {
   factory ForgotPasswordResponse.fromJson(Map<String, dynamic> json) {
     return ForgotPasswordResponse(
       success: json['success'] ?? false,
-      message: json['message'],
+      message: json['message']?.toString(),
     );
   }
 
@@ -274,245 +406,5 @@ class ForgotPasswordResponse {
       'success': success,
       'message': message,
     };
-  }
-}
-
-// ============================================================
-// CHANGE PASSWORD RESPONSE
-// ============================================================
-
-class ChangePasswordResponse {
-  final bool success;
-  final String? message;
-  
-  ChangePasswordResponse({
-    required this.success,
-    this.message,
-  });
-
-  factory ChangePasswordResponse.fromJson(Map<String, dynamic> json) {
-    return ChangePasswordResponse(
-      success: json['success'] ?? false,
-      message: json['message'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'success': success,
-      'message': message,
-    };
-  }
-}
-
-// ============================================================
-// USER UPDATE REQUEST
-// ============================================================
-
-class UserUpdateRequest {
-  final String? firstName;
-  final String? lastName;
-  final String? phone;
-  final String? gender;
-  final String? dateOfBirth;
-  final String? residentialAddress;
-  final String? emergencyContactName;
-  final String? emergencyContactPhone;
-  
-  UserUpdateRequest({
-    this.firstName,
-    this.lastName,
-    this.phone,
-    this.gender,
-    this.dateOfBirth,
-    this.residentialAddress,
-    this.emergencyContactName,
-    this.emergencyContactPhone,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'first_name': firstName,
-      'last_name': lastName,
-      'phone': phone,
-      'gender': gender,
-      'date_of_birth': dateOfBirth,
-      'residential_address': residentialAddress,
-      'emergency_contact_name': emergencyContactName,
-      'emergency_contact_phone': emergencyContactPhone,
-    };
-  }
-}
-
-// ============================================================
-// USER LIST RESPONSE
-// ============================================================
-
-class UserListResponse {
-  final bool success;
-  final String? message;
-  final List<User> users;
-  final int total;
-  
-  UserListResponse({
-    required this.success,
-    this.message,
-    this.users = const [],
-    this.total = 0,
-  });
-
-  factory UserListResponse.fromJson(Map<String, dynamic> json) {
-    final usersList = json['users'] as List? ?? [];
-    return UserListResponse(
-      success: json['success'] ?? false,
-      message: json['message'],
-      users: usersList.map((e) => User.fromJson(e)).toList(),
-      total: json['total'] ?? usersList.length,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'success': success,
-      'message': message,
-      'users': users.map((e) => e.toJson()).toList(),
-      'total': total,
-    };
-  }
-}
-
-// ============================================================
-// USER ROLE HELPERS
-// ============================================================
-
-class UserRole {
-  static const String superAdmin = 'super_admin';
-  static const String clientAdmin = 'client_admin';
-  static const String national = 'national';
-  static const String state = 'state';
-  static const String senatorial = 'senatorial';
-  static const String federalConstituency = 'federal_constituency';
-  static const String lga = 'lga';
-  static const String ward = 'ward';
-  static const String puAgent = 'pu_agent';
-  static const String partyAgent = 'party_agent';
-  static const String observer = 'observer';
-  static const String volunteer = 'volunteer';
-  
-  static const Map<String, String> displayNames = {
-    superAdmin: 'Super Administrator',
-    clientAdmin: 'Client Administrator',
-    national: 'National Coordinator',
-    state: 'State Coordinator',
-    senatorial: 'Senatorial Coordinator',
-    federalConstituency: 'Federal Constituency Coordinator',
-    lga: 'LGA Coordinator',
-    ward: 'Ward Coordinator',
-    puAgent: 'Polling Unit Agent',
-    partyAgent: 'Party Agent',
-    observer: 'Observer',
-    volunteer: 'Volunteer',
-  };
-  
-  static const Map<String, IconData> icons = {
-    superAdmin: Icons.admin_panel_settings,
-    clientAdmin: Icons.business,
-    national: Icons.public,
-    state: Icons.place,
-    senatorial: Icons.map,
-    federalConstituency: Icons.location_city,
-    lga: Icons.apartment,
-    ward: Icons.people_alt,
-    puAgent: Icons.assignment_ind,
-    partyAgent: Icons.how_to_vote,
-    observer: Icons.visibility,
-    volunteer: Icons.volunteer_activism,
-  };
-  
-  static const Map<String, Color> colors = {
-    superAdmin: Color(0xFF7C3AED),
-    clientAdmin: Color(0xFF2563EB),
-    national: Color(0xFF1F2937),
-    state: Color(0xFF0891B2),
-    senatorial: Color(0xFF6D28D9),
-    federalConstituency: Color(0xFF059669),
-    lga: Color(0xFFD97706),
-    ward: Color(0xFF0D9488),
-    puAgent: Color(0xFF2563EB),
-    partyAgent: Color(0xFFDC2626),
-    observer: Color(0xFF7C3AED),
-    volunteer: Color(0xFF059669),
-  };
-  
-  static String getDisplayName(String role) {
-    return displayNames[role] ?? role;
-  }
-  
-  static IconData getIcon(String role) {
-    return icons[role] ?? Icons.person;
-  }
-  
-  static Color getColor(String role) {
-    return colors[role] ?? Colors.grey;
-  }
-  
-  static List<String> getCoordinatorRoles() {
-    return [lga, ward, state, national, senatorial, federalConstituency];
-  }
-  
-  static List<String> getAgentRoles() {
-    return [puAgent, partyAgent, observer, volunteer];
-  }
-  
-  static bool isCoordinator(String role) {
-    return getCoordinatorRoles().contains(role);
-  }
-  
-  static bool isAgent(String role) {
-    return getAgentRoles().contains(role);
-  }
-}
-
-// ============================================================
-// USER STATUS HELPERS
-// ============================================================
-
-class UserStatus {
-  static const String active = 'active';
-  static const String suspended = 'suspended';
-  static const String pending = 'pending';
-  static const String archived = 'archived';
-  
-  static const Map<String, String> displayNames = {
-    active: 'Active',
-    suspended: 'Suspended',
-    pending: 'Pending',
-    archived: 'Archived',
-  };
-  
-  static const Map<String, Color> colors = {
-    active: Colors.green,
-    suspended: Colors.red,
-    pending: Colors.orange,
-    archived: Colors.grey,
-  };
-  
-  static const Map<String, IconData> icons = {
-    active: Icons.check_circle,
-    suspended: Icons.block,
-    pending: Icons.hourglass_empty,
-    archived: Icons.archive,
-  };
-  
-  static String getDisplayName(String status) {
-    return displayNames[status] ?? status;
-  }
-  
-  static Color getColor(String status) {
-    return colors[status] ?? Colors.grey;
-  }
-  
-  static IconData getIcon(String status) {
-    return icons[status] ?? Icons.circle;
   }
 }

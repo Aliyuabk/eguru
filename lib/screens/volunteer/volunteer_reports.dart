@@ -34,9 +34,7 @@ class VolunteerReportsScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to create report
-        },
+        onPressed: () {},
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add),
       ),
@@ -46,17 +44,10 @@ class VolunteerReportsScreen extends StatelessWidget {
   Widget _buildReportCard(String title, String description, String date, String status) {
     Color statusColor;
     switch (status) {
-      case 'Approved':
-        statusColor = AppColors.success;
-        break;
-      case 'Submitted':
-        statusColor = AppColors.warning;
-        break;
-      case 'Rejected':
-        statusColor = AppColors.danger;
-        break;
-      default:
-        statusColor = AppColors.gray500;
+      case 'Approved': statusColor = AppColors.success; break;
+      case 'Submitted': statusColor = AppColors.warning; break;
+      case 'Rejected': statusColor = AppColors.danger; break;
+      default: statusColor = AppColors.gray500;
     }
 
     return Card(
@@ -70,13 +61,7 @@ class VolunteerReportsScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+                  child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -84,27 +69,14 @@ class VolunteerReportsScreen extends StatelessWidget {
                     color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
-                    status,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: Text(status, style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(description),
             const SizedBox(height: 8),
-            Text(
-              date,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.gray500,
-              ),
-            ),
+            Text(date, style: const TextStyle(fontSize: 12, color: AppColors.gray500)),
           ],
         ),
       ),

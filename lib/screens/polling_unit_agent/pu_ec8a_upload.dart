@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:photo_view/photo_view.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/custom_button.dart';
 
@@ -34,7 +33,6 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Info Card
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -57,7 +55,6 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
                   
                   const SizedBox(height: 24),
                   
-                  // Image Preview or Capture Button
                   GestureDetector(
                     onTap: _selectImage,
                     child: Container(
@@ -74,63 +71,34 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
                       child: _selectedImage != null
                           ? Stack(
                               children: [
-                               ClipRRect(
+                                ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: Image.network(
-                                    _selectedImage!.path,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return FutureBuilder<Uint8List>(
-                                        future: _selectedImage!.readAsBytes(),
-                                        builder: (context, snapshot) {
-                                          if (snapshot.hasData) {
-                                            return Image.memory(
-                                              snapshot.data!,
-                                              fit: BoxFit.cover,
-                                              width: double.infinity,
-                                            );
-                                          }
-                                          return const Center(child: CircularProgressIndicator());
-                                        },
-                                      );
+                                  child: FutureBuilder<Uint8List>(
+                                    future: _selectedImage!.readAsBytes(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        return Image.memory(
+                                          snapshot.data!,
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                        );
+                                      }
+                                      return const Center(child: CircularProgressIndicator());
                                     },
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withValues(alpha: 0.6),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.preview,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
                                   ),
                                 ),
                                 Positioned(
                                   bottom: 8,
                                   right: 8,
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                     decoration: BoxDecoration(
                                       color: Colors.black.withValues(alpha: 0.6),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: const Text(
                                       'Tap to change',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                      ),
+                                      style: TextStyle(color: Colors.white, fontSize: 12),
                                     ),
                                   ),
                                 ),
@@ -139,18 +107,11 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
                           : Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
-                                  Icons.photo_camera,
-                                  size: 48,
-                                  color: AppColors.gray400,
-                                ),
+                                Icon(Icons.photo_camera, size: 48, color: AppColors.gray400),
                                 const SizedBox(height: 8),
                                 Text(
                                   'Tap to take photo',
-                                  style: TextStyle(
-                                    color: AppColors.gray400,
-                                    fontSize: 14,
-                                  ),
+                                  style: TextStyle(color: AppColors.gray400, fontSize: 14),
                                 ),
                               ],
                             ),
@@ -159,7 +120,6 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
                   
                   const SizedBox(height: 24),
                   
-                  // PU Info
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -175,11 +135,11 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
                     child: Column(
                       children: [
                         _buildInfoRow('Polling Unit', 'Kangire P.S'),
-                        _buildDivider(),
+                        const Divider(color: AppColors.gray200, height: 1),
                         _buildInfoRow('Ward', 'Kangire'),
-                        _buildDivider(),
+                        const Divider(color: AppColors.gray200, height: 1),
                         _buildInfoRow('LGA', 'Birnin Kudu'),
-                        _buildDivider(),
+                        const Divider(color: AppColors.gray200, height: 1),
                         _buildInfoRow('Election', '2027 Governorship'),
                       ],
                     ),
@@ -187,7 +147,6 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
                   
                   const SizedBox(height: 24),
                   
-                  // Upload Button
                   CustomButton(
                     text: _selectedImage == null ? 'Select Image First' : 'Upload EC8A',
                     onPressed: _selectedImage != null && !_isUploading
@@ -207,29 +166,10 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.gray600,
-              fontSize: 14,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-            ),
-          ),
+          Text(label, style: const TextStyle(color: AppColors.gray600, fontSize: 14)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
         ],
       ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return const Divider(
-      color: AppColors.gray200,
-      height: 1,
     );
   }
 
@@ -247,11 +187,7 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
                 color: AppColors.success.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.check_circle,
-                color: AppColors.success,
-                size: 48,
-              ),
+              child: const Icon(Icons.check_circle, color: AppColors.success, size: 48),
             ),
             const SizedBox(height: 24),
             Text(
@@ -298,7 +234,6 @@ class _PUEC8AUploadScreenState extends State<PUEC8AUploadScreen> {
       _isUploading = true;
     });
 
-    // Simulate upload
     Future.delayed(const Duration(seconds: 3), () {
       setState(() {
         _isUploading = false;

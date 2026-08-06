@@ -1,8 +1,8 @@
 class ApiConstants {
-  // Use the correct base URL
-  static const String baseUrl = 'https://eguruelection.kowagurutech.ng/api/endpoints';
+  // ✅ CORRECT URL - fixed spelling
+  static const String baseUrl = 'https://guru.kowagurutech.ng/api/endpoints';
   
-  // Auth endpoints - ensure proper paths
+  // Auth endpoints
   static const String login = '/auth/login.php';
   static const String logout = '/auth/logout.php';
   static const String forgotPassword = '/auth/forgot_password.php';
@@ -44,11 +44,24 @@ class ApiConstants {
   static const String chatRooms = '/chat/get_rooms.php';
   static const String chatMessages = '/chat/get_messages.php';
   static const String sendMessage = '/chat/send_message.php';
+  static const String getContacts = '/chat/get_contacts.php';
+  static const String getCoordinator = '/chat/get_coordinator.php';
+  static const String markRead = '/chat/mark_read.php';
+  static const String uploadFile = '/chat/upload_file.php';
   
   // Notification endpoints
   static const String notifications = '/notifications/get_notifications.php';
+  static const String markNotificationRead = '/notifications/mark_read.php';
   
   // Profile endpoints
   static const String profile = '/profile/get_profile.php';
   static const String updateProfile = '/profile/update_profile.php';
+  
+  // Sync endpoints
+  static const String syncData = '/sync/sync_data.php';
+  static const String checkSyncStatus = '/sync/check_status.php';
+  
+  // Check-in endpoints
+  static const String checkin = '/checkin/checkin.php';
+  static const String checkinStatus = '/checkin/status.php';
 }

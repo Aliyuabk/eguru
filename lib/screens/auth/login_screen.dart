@@ -1,4 +1,3 @@
-// screens/auth/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +6,7 @@ import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
 import '../../providers/auth_provider.dart';
 import '../common/dashboard_screen.dart';
+import '../common/web_redirect_screen.dart';
 import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -47,17 +47,22 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     
-    // If user is already authenticated, redirect to dashboard
     if (authProvider.isAuthenticated && !_isLoggingIn) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const DashboardScreen()),
-        );
+        if (authProvider.isMobileRole) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const DashboardScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const WebRedirectScreen()),
+          );
+        }
       });
     }
     
-    // Show fingerprint login option if available
     final bool showFingerprintLogin = authProvider.fingerprintAvailable && 
                                        authProvider.fingerprintEnabled &&
                                        authProvider.savedUserName != null;
@@ -73,10 +78,8 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                
                 const SizedBox(height: 40),
                 
-                // Logo and Title
                 Center(
                   child: Column(
                     children: [
@@ -96,8 +99,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      
-                      // Welcome Back with User Name if fingerprint available
                       Text(
                         showFingerprintLogin && authProvider.savedUserName != null
                             ? 'Welcome Back, ${authProvider.savedUserName}!'
@@ -124,12 +125,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 const SizedBox(height: 48),
                 
-                // Fingerprint Login Button (if available)
                 if (showFingerprintLogin) ...[
                   _buildFingerprintLoginButton(authProvider),
                   const SizedBox(height: 24),
-                  
-                  // Divider with OR text
                   Row(
                     children: [
                       Expanded(
@@ -160,7 +158,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 24),
                 ],
                 
-                // Email Field
                 CustomTextField(
                   label: 'Email Address',
                   hint: 'Enter your email',
@@ -181,7 +178,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 const SizedBox(height: 20),
                 
-                // Password Field
                 CustomTextField(
                   label: 'Password',
                   hint: 'Enter your password',
@@ -214,7 +210,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 const SizedBox(height: 12),
                 
-                // Remember Me & Forgot Password
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -264,7 +259,37 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 const SizedBox(height: 32),
                 
-                // Login Button
+                if (authProvider.error != null)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.danger.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.danger.withValues(alpha: 0.2)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline, color: AppColors.danger, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            authProvider.error!,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: AppColors.danger,
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: authProvider.clearError,
+                          child: Icon(Icons.close, color: AppColors.danger, size: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                
+                const SizedBox(height: 16),
+                
                 CustomButton(
                   text: 'Sign In',
                   onPressed: _isLoggingIn ? null : () async {
@@ -283,32 +308,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                       
                       if (success && mounted) {
-                        // If remember me is checked and fingerprint is available
                         if (_rememberMe && authProvider.fingerprintAvailable) {
-                          // Show option to enable fingerprint
                           _showEnableFingerprintDialog(context, authProvider);
                         }
                         
-                        // Navigate to dashboard
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => const DashboardScreen()),
-                        );
-                      } else {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              authProvider.error ?? 'Login failed',
-                              style: GoogleFonts.inter(),
-                            ),
-                            backgroundColor: AppColors.danger,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        );
+                        if (authProvider.isMobileRole) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                          );
+                        } else {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const WebRedirectScreen()),
+                          );
+                        }
                       }
                     }
                   },
@@ -356,25 +370,17 @@ class _LoginScreenState extends State<LoginScreen> {
               });
               
               if (success && mounted) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DashboardScreen()),
-                );
-              } else {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      authProvider.error ?? 'Fingerprint authentication failed',
-                      style: GoogleFonts.inter(),
-                    ),
-                    backgroundColor: AppColors.danger,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                );
+                if (authProvider.isMobileRole) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                  );
+                } else {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const WebRedirectScreen()),
+                  );
+                }
               }
             },
           ),

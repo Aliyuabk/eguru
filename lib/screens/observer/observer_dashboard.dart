@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/status_card.dart';
+import '../../models/user_model.dart';
+import '../../providers/auth_provider.dart';
+import 'observer_observation.dart';
 
 class ObserverDashboardScreen extends StatefulWidget {
   const ObserverDashboardScreen({super.key});
@@ -13,6 +17,9 @@ class ObserverDashboardScreen extends StatefulWidget {
 class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.user;
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       body: RefreshIndicator(
@@ -24,23 +31,12 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              
-              // Welcome Header
-              _buildWelcomeHeader(),
-              
+              _buildWelcomeHeader(user),
               const SizedBox(height: 24),
-              
-              // Stats Row
               _buildStatsRow(),
-              
               const SizedBox(height: 24),
-              
-              // Quick Actions
               _buildQuickActions(),
-              
               const SizedBox(height: 24),
-              
-              // Recent Observations
               _buildRecentObservations(),
             ],
           ),
@@ -49,7 +45,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     );
   }
 
-  Widget _buildWelcomeHeader() {
+  Widget _buildWelcomeHeader(User? user) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -68,9 +64,9 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
               CircleAvatar(
                 radius: 28,
                 backgroundColor: Colors.white.withValues(alpha: 0.2),
-                child: const Text(
-                  'O',
-                  style: TextStyle(
+                child: Text(
+                  user?.initials ?? 'O',
+                  style: GoogleFonts.inter(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -82,16 +78,16 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Welcome, Observer!',
-                      style: TextStyle(
+                    Text(
+                      'Hello, ${user?.firstName ?? 'Observer'}!',
+                      style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                     Text(
-                      'Election Monitoring • 2027 Governorship',
+                      user?.roleDisplayName ?? 'Observer',
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         color: Colors.white70,
@@ -120,11 +116,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                     const SizedBox(width: 6),
                     const Text(
                       'Active',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.green,
-                      ),
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.green),
                     ),
                   ],
                 ),
@@ -144,7 +136,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Assigned: Kangire Primary School • PU-001',
+                    'Assigned: ${user?.puName ?? 'No PU Assigned'}',
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       color: Colors.white70,
@@ -207,7 +199,12 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
               'Observations',
               Icons.visibility,
               Colors.purple,
-              () {},
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ObserverObservationScreen()),
+                );
+              },
             ),
             _buildQuickAction(
               'Incident Report',
@@ -330,14 +327,9 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
   Widget _buildObservationItem(String title, String subtitle, String time, String status) {
     Color statusColor;
     switch (status) {
-      case 'Approved':
-        statusColor = AppColors.success;
-        break;
-      case 'Submitted':
-        statusColor = AppColors.warning;
-        break;
-      default:
-        statusColor = AppColors.gray500;
+      case 'Approved': statusColor = AppColors.success; break;
+      case 'Submitted': statusColor = AppColors.warning; break;
+      default: statusColor = AppColors.gray500;
     }
 
     return Container(
@@ -369,21 +361,8 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.gray800,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: AppColors.gray500,
-                  ),
-                ),
+                Text(title, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500)),
+                Text(subtitle, style: GoogleFonts.inter(fontSize: 11, color: AppColors.gray500)),
               ],
             ),
           ),
@@ -396,23 +375,10 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                   color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  status,
-                  style: GoogleFonts.inter(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
-                    color: statusColor,
-                  ),
-                ),
+                child: Text(status, style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w600, color: statusColor)),
               ),
               const SizedBox(height: 4),
-              Text(
-                time,
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  color: AppColors.gray400,
-                ),
-              ),
+              Text(time, style: GoogleFonts.inter(fontSize: 10, color: AppColors.gray400)),
             ],
           ),
         ],

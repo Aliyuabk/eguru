@@ -65,7 +65,7 @@
     <!-- ============================================ -->
     
     <application
-        android:label="Eguru"
+        android:label="Eguru Vote"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true"

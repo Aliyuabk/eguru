@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/status_card.dart';
+import '../../models/user_model.dart';
+import '../../providers/auth_provider.dart';
 import 'volunteer_tasks.dart';
 import 'volunteer_reports.dart';
 
@@ -15,6 +18,9 @@ class VolunteerDashboardScreen extends StatefulWidget {
 class _VolunteerDashboardScreenState extends State<VolunteerDashboardScreen> {
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.user;
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       body: RefreshIndicator(
@@ -26,23 +32,12 @@ class _VolunteerDashboardScreenState extends State<VolunteerDashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              
-              // Welcome Header
-              _buildWelcomeHeader(),
-              
+              _buildWelcomeHeader(user),
               const SizedBox(height: 24),
-              
-              // Stats Row
               _buildStatsRow(),
-              
               const SizedBox(height: 24),
-              
-              // Quick Actions
               _buildQuickActions(),
-              
               const SizedBox(height: 24),
-              
-              // Current Tasks
               _buildCurrentTasks(),
             ],
           ),
@@ -51,7 +46,7 @@ class _VolunteerDashboardScreenState extends State<VolunteerDashboardScreen> {
     );
   }
 
-  Widget _buildWelcomeHeader() {
+  Widget _buildWelcomeHeader(User? user) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -70,9 +65,9 @@ class _VolunteerDashboardScreenState extends State<VolunteerDashboardScreen> {
               CircleAvatar(
                 radius: 28,
                 backgroundColor: Colors.white.withValues(alpha: 0.2),
-                child: const Text(
-                  'V',
-                  style: TextStyle(
+                child: Text(
+                  user?.initials ?? 'V',
+                  style: GoogleFonts.inter(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -84,16 +79,16 @@ class _VolunteerDashboardScreenState extends State<VolunteerDashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Welcome, Volunteer!',
-                      style: TextStyle(
+                    Text(
+                      'Hello, ${user?.firstName ?? 'Volunteer'}!',
+                      style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                     Text(
-                      'Supporting Election Activities',
+                      user?.roleDisplayName ?? 'Volunteer',
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         color: Colors.white70,
@@ -122,11 +117,7 @@ class _VolunteerDashboardScreenState extends State<VolunteerDashboardScreen> {
                     const SizedBox(width: 6),
                     const Text(
                       'Active',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.green,
-                      ),
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.green),
                     ),
                   ],
                 ),
@@ -322,14 +313,9 @@ class _VolunteerDashboardScreenState extends State<VolunteerDashboardScreen> {
   Widget _buildTaskItem(String title, String subtitle, String location, String status, double progress) {
     Color statusColor;
     switch (status) {
-      case 'Completed':
-        statusColor = AppColors.success;
-        break;
-      case 'In Progress':
-        statusColor = AppColors.warning;
-        break;
-      default:
-        statusColor = AppColors.info;
+      case 'Completed': statusColor = AppColors.success; break;
+      case 'In Progress': statusColor = AppColors.warning; break;
+      default: statusColor = AppColors.info;
     }
 
     return Container(
@@ -353,14 +339,7 @@ class _VolunteerDashboardScreenState extends State<VolunteerDashboardScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.gray800,
-                  ),
-                ),
+                child: Text(title, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600)),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -368,46 +347,20 @@ class _VolunteerDashboardScreenState extends State<VolunteerDashboardScreen> {
                   color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  status,
-                  style: GoogleFonts.inter(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
-                    color: statusColor,
-                  ),
-                ),
+                child: Text(status, style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w600, color: statusColor)),
               ),
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              color: AppColors.gray500,
-            ),
-          ),
+          Text(subtitle, style: GoogleFonts.inter(fontSize: 12, color: AppColors.gray500)),
           const SizedBox(height: 8),
           Row(
             children: [
               Icon(Icons.location_on, size: 14, color: AppColors.gray400),
               const SizedBox(width: 4),
-              Text(
-                location,
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  color: AppColors.gray400,
-                ),
-              ),
+              Text(location, style: GoogleFonts.inter(fontSize: 11, color: AppColors.gray400)),
               const Spacer(),
-              Text(
-                '${(progress * 100).toInt()}%',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: statusColor,
-                ),
-              ),
+              Text('${(progress * 100).toInt()}%', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: statusColor)),
             ],
           ),
           const SizedBox(height: 8),

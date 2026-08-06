@@ -40,23 +40,18 @@ dependencies:
   badges: ^3.1.2
 
   # ============================================================
-  # MEDIA & CAMERA (Add these)
+  # MEDIA & CAMERA
   # ============================================================
   image_picker: ^1.2.0
   file_picker: ^10.3.3
   video_player: ^2.10.0
 
   # ============================================================
-  # LOCATION (Add these)
+  # LOCATION
   # ============================================================
   geolocator: ^14.0.2
   geocoding: ^4.0.0
   location: ^8.0.1
-
-  # ============================================================
-  # BIOMETRIC (Remove biometric_storage if not needed)
-  # ============================================================
-  # biometric_storage: ^5.0.0  # Comment out if not needed
 
   # ============================================================
   # OTHER UTILITIES
@@ -77,10 +72,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  assets:
-    - assets/images/
-    - assets/icons/
-    - assets/fonts/
+  # Comment out assets if folders don't exist yet
+  # assets:
+  #   - assets/images/
+  #   - assets/icons/
+  #   - assets/fonts/
 
 flutter_launcher_icons:
   android: true

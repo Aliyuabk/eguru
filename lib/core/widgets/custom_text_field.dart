@@ -1,4 +1,3 @@
-// core/widgets/custom_text_field.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
@@ -15,8 +14,6 @@ class CustomTextField extends StatefulWidget {
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
-  
-  // Add missing parameters
   final bool isNumber;
   final bool isMultiline;
   final int? maxLines;
@@ -24,6 +21,7 @@ class CustomTextField extends StatefulWidget {
   final bool readOnly;
   final VoidCallback? onTap;
   final Function(String)? onChanged;
+  final String? initialValue;
 
   const CustomTextField({
     super.key,
@@ -45,6 +43,7 @@ class CustomTextField extends StatefulWidget {
     this.readOnly = false,
     this.onTap,
     this.onChanged,
+    this.initialValue,
   });
 
   @override
@@ -53,11 +52,24 @@ class CustomTextField extends StatefulWidget {
 
 class _CustomTextFieldState extends State<CustomTextField> {
   late bool _obscureText;
+  late TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
     _obscureText = widget.isPassword && !widget.obscureText;
+    _controller = widget.controller ?? TextEditingController();
+    if (widget.initialValue != null && _controller.text.isEmpty) {
+      _controller.text = widget.initialValue!;
+    }
+  }
+
+  @override
+  void dispose() {
+    if (widget.controller == null) {
+      _controller.dispose();
+    }
+    super.dispose();
   }
 
   @override
@@ -75,7 +87,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         ),
         const SizedBox(height: 6),
         TextFormField(
-          controller: widget.controller,
+          controller: _controller,
           obscureText: _obscureText,
           readOnly: widget.readOnly,
           onTap: widget.onTap,

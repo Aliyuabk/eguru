@@ -44,76 +44,43 @@ class ChatMessage {
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
+    // Safe int parser
+    int safeInt(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? 0;
+      return 0;
+    }
+
     return ChatMessage(
-      id: json['id'] ?? 0,
-      roomId: json['room_id'] ?? 0,
-      senderId: json['sender_id'] ?? 0,
-      receiverId: json['receiver_id'],
-      messageType: json['message_type'] ?? 'text',
-      content: json['content'] ?? '',
-      mediaUrl: json['media_url'],
-      mediaSize: json['media_size'],
-      mediaSha256: json['media_sha256'],
+      id: safeInt(json['id']),
+      roomId: safeInt(json['room_id']),
+      senderId: safeInt(json['sender_id']),
+      receiverId: safeInt(json['receiver_id']),
+      messageType: json['message_type']?.toString() ?? 'text',
+      content: json['content']?.toString() ?? '',
+      mediaUrl: json['media_url']?.toString(),
+      mediaSize: safeInt(json['media_size']),
+      mediaSha256: json['media_sha256']?.toString(),
       gpsLat: json['gps_lat'] != null ? double.tryParse(json['gps_lat'].toString()) : null,
       gpsLng: json['gps_lng'] != null ? double.tryParse(json['gps_lng'].toString()) : null,
-      isOfflineSync: json['is_offline_sync'] == 1,
-      isDeleted: json['is_deleted'] == 1,
-      createdAt: json['created_at'] ?? '',
-      isRead: json['is_read'] == 1,
-      readAt: json['read_at'],
-      senderFirstName: json['sender_first_name'],
-      senderLastName: json['sender_last_name'],
-      senderPhoto: json['sender_photo'],
-      receiverName: json['receiver_name'],
+      isOfflineSync: json['is_offline_sync'] == 1 || json['is_offline_sync'] == '1',
+      isDeleted: json['is_deleted'] == 1 || json['is_deleted'] == '1',
+      createdAt: json['created_at']?.toString() ?? '',
+      isRead: json['is_read'] == 1 || json['is_read'] == '1',
+      readAt: json['read_at']?.toString(),
+      senderFirstName: json['sender_first_name']?.toString(),
+      senderLastName: json['sender_last_name']?.toString(),
+      senderPhoto: json['sender_photo']?.toString(),
+      receiverName: json['receiver_name']?.toString(),
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'room_id': roomId,
-      'sender_id': senderId,
-      'receiver_id': receiverId,
-      'message_type': messageType,
-      'content': content,
-      'media_url': mediaUrl,
-      'media_size': mediaSize,
-      'media_sha256': mediaSha256,
-      'gps_lat': gpsLat,
-      'gps_lng': gpsLng,
-      'is_offline_sync': isOfflineSync ? 1 : 0,
-      'is_deleted': isDeleted ? 1 : 0,
-      'created_at': createdAt,
-      'is_read': (isRead == true) ? 1 : 0, // Fixed: properly check nullable bool
-      'read_at': readAt,
-    };
-  }
-  
   String get senderName {
     if (senderFirstName != null && senderLastName != null) {
       return '$senderFirstName $senderLastName';
     }
     return 'Unknown User';
-  }
-  
-  String get timeDisplay {
-    try {
-      final dateTime = DateTime.parse(createdAt);
-      final now = DateTime.now();
-      final difference = now.difference(dateTime);
-      
-      if (difference.inDays > 0) {
-        return '${difference.inDays}d ago';
-      } else if (difference.inHours > 0) {
-        return '${difference.inHours}h ago';
-      } else if (difference.inMinutes > 0) {
-        return '${difference.inMinutes}m ago';
-      } else {
-        return 'Just now';
-      }
-    } catch (e) {
-      return createdAt;
-    }
   }
 }
 
@@ -132,7 +99,7 @@ class ChatRoom {
   final String? lastMessage;
   final String? lastMessageTime;
   final int? unreadCount;
-  
+
   ChatRoom({
     required this.id,
     required this.tenantId,
@@ -151,66 +118,31 @@ class ChatRoom {
   });
 
   factory ChatRoom.fromJson(Map<String, dynamic> json) {
+    int safeInt(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? 0;
+      return 0;
+    }
+
     return ChatRoom(
-      id: json['id'] ?? 0,
-      tenantId: json['tenant_id'] ?? 0,
-      name: json['name'] ?? '',
-      type: json['type'] ?? 'group',
-      electionId: json['election_id'],
-      jurisdictionType: json['jurisdiction_type'],
-      jurisdictionId: json['jurisdiction_id'],
-      createdBy: json['created_by'] ?? 0,
-      isActive: json['is_active'] == 1,
-      createdAt: json['created_at'] ?? '',
-      memberCount: json['member_count'],
-      lastMessage: json['last_message'],
-      lastMessageTime: json['last_message_time'],
-      unreadCount: json['unread_count'] ?? 0,
+      id: safeInt(json['id']),
+      tenantId: safeInt(json['tenant_id']),
+      name: json['name']?.toString() ?? '',
+      type: json['type']?.toString() ?? 'group',
+      electionId: safeInt(json['election_id']),
+      jurisdictionType: json['jurisdiction_type']?.toString(),
+      jurisdictionId: safeInt(json['jurisdiction_id']),
+      createdBy: safeInt(json['created_by']),
+      isActive: json['is_active'] == 1 || json['is_active'] == '1',
+      createdAt: json['created_at']?.toString() ?? '',
+      memberCount: safeInt(json['member_count']),
+      lastMessage: json['last_message']?.toString(),
+      lastMessageTime: json['last_message_time']?.toString(),
+      unreadCount: safeInt(json['unread_count']),
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'tenant_id': tenantId,
-      'name': name,
-      'type': type,
-      'election_id': electionId,
-      'jurisdiction_type': jurisdictionType,
-      'jurisdiction_id': jurisdictionId,
-      'created_by': createdBy,
-      'is_active': isActive ? 1 : 0,
-      'created_at': createdAt,
-    };
-  }
-  
-  String get lastMessageTimeDisplay {
-    if (lastMessageTime == null) return '';
-    try {
-      final dateTime = DateTime.parse(lastMessageTime!);
-      final now = DateTime.now();
-      final difference = now.difference(dateTime);
-      
-      if (difference.inDays > 7) {
-        return '${difference.inDays}d';
-      } else if (difference.inDays > 0) {
-        return '${difference.inDays}d';
-      } else if (difference.inHours > 0) {
-        return '${difference.inHours}h';
-      } else if (difference.inMinutes > 0) {
-        return '${difference.inMinutes}m';
-      } else {
-        return 'Now';
-      }
-    } catch (e) {
-      return '';
-    }
-  }
 }
-
-// ============================================================
-// CONTACT CLASS
-// ============================================================
 
 class Contact {
   final int id;
@@ -228,7 +160,8 @@ class Contact {
   final int unreadCount;
   final bool isOnline;
   final String? lastLoginAt;
-  
+  final int? puId;
+
   Contact({
     required this.id,
     required this.fullName,
@@ -245,28 +178,37 @@ class Contact {
     this.unreadCount = 0,
     this.isOnline = false,
     this.lastLoginAt,
+    this.puId,
   });
 
   factory Contact.fromJson(Map<String, dynamic> json) {
+    int safeInt(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? 0;
+      return 0;
+    }
+
     return Contact(
-      id: json['id'] ?? 0,
-      fullName: json['full_name'] ?? '',
-      email: json['email'],
-      phone: json['phone'],
-      photographUrl: json['photograph_url'],
-      roleId: json['role_id'] ?? 0,
-      roleName: json['role_name'],
-      roleLevel: json['role_level'],
-      puName: json['pu_name'],
-      puCode: json['pu_code'],
-      lastMessage: json['last_message'],
-      lastMessageTime: json['last_message_time'],
-      unreadCount: json['unread_count'] ?? 0,
-      isOnline: json['is_online'] == 1,
-      lastLoginAt: json['last_login_at'],
+      id: safeInt(json['id']),
+      fullName: json['full_name']?.toString() ?? '',
+      email: json['email']?.toString(),
+      phone: json['phone']?.toString(),
+      photographUrl: json['photograph_url']?.toString(),
+      roleId: safeInt(json['role_id']),
+      roleName: json['role_name']?.toString(),
+      roleLevel: json['role_level']?.toString(),
+      puName: json['pu_name']?.toString(),
+      puCode: json['pu_code']?.toString(),
+      lastMessage: json['last_message']?.toString(),
+      lastMessageTime: json['last_message_time']?.toString(),
+      unreadCount: safeInt(json['unread_count']),
+      isOnline: json['is_online'] == 1 || json['is_online'] == '1',
+      lastLoginAt: json['last_login_at']?.toString(),
+      puId: safeInt(json['pu_id']),
     );
   }
-  
+
   String get initials {
     final parts = fullName.split(' ');
     if (parts.length >= 2) {
@@ -274,20 +216,16 @@ class Contact {
     }
     return fullName.isNotEmpty ? fullName[0].toUpperCase() : 'U';
   }
-  
+
   String get lastMessageDisplay {
     if (lastMessage == null || lastMessage!.isEmpty) {
       return 'No messages yet';
     }
-    return lastMessage!.length > 50 
-        ? '${lastMessage!.substring(0, 50)}...' 
+    return lastMessage!.length > 50
+        ? '${lastMessage!.substring(0, 50)}...'
         : lastMessage!;
   }
 }
-
-// ============================================================
-// CHAT CONTACTS RESPONSE
-// ============================================================
 
 class ChatContactsResponse {
   final List<Contact> contacts;

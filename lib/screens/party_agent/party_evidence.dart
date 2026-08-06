@@ -27,28 +27,16 @@ class PartyEvidenceScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.photo_library,
-                  size: 48,
-                  color: AppColors.gray400,
-                ),
+                Icon(Icons.photo_library, size: 48, color: AppColors.gray400),
                 const SizedBox(height: 8),
-                Text(
-                  'Evidence ${index + 1}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.gray600,
-                  ),
-                ),
+                Text('Evidence ${index + 1}', style: const TextStyle(fontSize: 12, color: AppColors.gray600)),
               ],
             ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to upload evidence
-        },
+        onPressed: () {},
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add_a_photo),
       ),

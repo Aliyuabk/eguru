@@ -3,25 +3,43 @@ import '../../core/constants/app_colors.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
 
-class PUAccreditationScreen extends StatefulWidget {
-  const PUAccreditationScreen({super.key});
+class ObserverObservationScreen extends StatefulWidget {
+  const ObserverObservationScreen({super.key});
 
   @override
-  State<PUAccreditationScreen> createState() => _PUAccreditationScreenState();
+  State<ObserverObservationScreen> createState() => _ObserverObservationScreenState();
 }
 
-class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
+class _ObserverObservationScreenState extends State<ObserverObservationScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _accreditedVotersController = TextEditingController();
-  final _registeredVotersController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  String _selectedCategory = 'Voting Process';
   bool _isSubmitted = false;
   bool _isSubmitting = false;
+
+  final List<String> _categories = [
+    'Voting Process',
+    'Security',
+    'Materials',
+    'Accreditation',
+    'Counting',
+    'Incident',
+    'General',
+  ];
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Accreditation'),
+        title: const Text('New Observation'),
         actions: [
           if (_isSubmitted)
             const Icon(Icons.check_circle, color: AppColors.success),
@@ -48,7 +66,7 @@ class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Record the number of accredited voters for this polling unit',
+                              'Record your observation about the election process at this polling unit',
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ),
@@ -58,44 +76,14 @@ class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
                     
                     const SizedBox(height: 24),
                     
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          _buildInfoRow('Polling Unit', 'Kangire P.S'),
-                          const Divider(color: AppColors.gray200, height: 1),
-                          _buildInfoRow('Ward', 'Kangire'),
-                          const Divider(color: AppColors.gray200, height: 1),
-                          _buildInfoRow('LGA', 'Birnin Kudu'),
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
                     CustomTextField(
-                      label: 'Registered Voters',
-                      hint: 'Enter total registered voters',
-                      controller: _registeredVotersController,
-                      isNumber: true,
+                      label: 'Title',
+                      hint: 'Enter observation title',
+                      controller: _titleController,
                       isRequired: true,
-                      prefixIcon: const Icon(Icons.people, color: AppColors.gray400),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter registered voters';
-                        }
-                        if (int.tryParse(value) == null) {
-                          return 'Please enter a valid number';
+                          return 'Please enter a title';
                         }
                         return null;
                       },
@@ -103,19 +91,42 @@ class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
                     
                     const SizedBox(height: 16),
                     
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedCategory,
+                      decoration: InputDecoration(
+                        labelText: 'Category',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        filled: true,
+                        fillColor: AppColors.gray50,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      ),
+                      items: _categories.map((category) {
+                        return DropdownMenuItem(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCategory = value!;
+                        });
+                      },
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
                     CustomTextField(
-                      label: 'Accredited Voters',
-                      hint: 'Enter number of accredited voters',
-                      controller: _accreditedVotersController,
-                      isNumber: true,
+                      label: 'Description',
+                      hint: 'Enter detailed observation',
+                      controller: _descriptionController,
+                      isMultiline: true,
+                      maxLines: 5,
                       isRequired: true,
-                      prefixIcon: const Icon(Icons.person_add, color: AppColors.gray400),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter accredited voters';
-                        }
-                        if (int.tryParse(value) == null) {
-                          return 'Please enter a valid number';
+                          return 'Please enter a description';
                         }
                         return null;
                       },
@@ -124,27 +135,14 @@ class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
                     const SizedBox(height: 24),
                     
                     CustomButton(
-                      text: 'Submit Accreditation',
-                      onPressed: _isSubmitting ? null : _submitAccreditation,
+                      text: 'Submit Observation',
+                      onPressed: _isSubmitting ? null : _submitObservation,
                       isLoading: _isSubmitting,
                     ),
                   ],
                 ),
               ),
             ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: AppColors.gray600, fontSize: 14)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
-        ],
-      ),
     );
   }
 
@@ -166,12 +164,12 @@ class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Accreditation Submitted!',
+              'Observation Submitted!',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
             Text(
-              'Accreditation records have been successfully submitted.',
+              'Your observation has been successfully submitted.',
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -183,10 +181,11 @@ class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSummaryRow('Registered Voters', _registeredVotersController.text),
+                  _buildSummaryRow('Title', _titleController.text),
                   const Divider(color: AppColors.gray200, height: 1),
-                  _buildSummaryRow('Accredited Voters', _accreditedVotersController.text),
+                  _buildSummaryRow('Category', _selectedCategory),
                 ],
               ),
             ),
@@ -210,13 +209,19 @@ class _PUAccreditationScreenState extends State<PUAccreditationScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(color: AppColors.gray600, fontSize: 14)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+              textAlign: TextAlign.right,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  void _submitAccreditation() {
+  void _submitObservation() {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() {
         _isSubmitting = true;

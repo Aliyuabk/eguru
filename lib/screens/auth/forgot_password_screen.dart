@@ -1,4 +1,3 @@
-// screens/auth/forgot_password_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -53,7 +52,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Info Card
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -80,7 +78,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               
               const SizedBox(height: 32),
               
-              // Email Field
               CustomTextField(
                 label: 'Email Address',
                 hint: 'Enter your registered email',
@@ -101,7 +98,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               
               const SizedBox(height: 32),
               
-              // Submit Button
               CustomButton(
                 text: 'Send Reset Link',
                 onPressed: _isSubmitted || _isLoading ? null : () async {

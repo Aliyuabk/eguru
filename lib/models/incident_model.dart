@@ -113,7 +113,6 @@ class Incident {
   }
 }
 
-// This class is NOT for JSON serialization, it's a UI helper
 class IncidentType {
   final String value;
   final String label;

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:video_player/video_player.dart'; 
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/custom_button.dart';
 // import 'package:audio_recorder/audio_recorder.dart';

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/custom_button.dart';
-import '../../core/widgets/custom_text_field.dart';
 
 class PUVoteCountScreen extends StatefulWidget {
   const PUVoteCountScreen({super.key});
@@ -59,7 +58,6 @@ class _PUVoteCountScreenState extends State<PUVoteCountScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Info Card
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -82,14 +80,12 @@ class _PUVoteCountScreenState extends State<PUVoteCountScreen> {
                     
                     const SizedBox(height: 24),
                     
-                    // Vote Count Fields
                     ..._parties.map((party) {
                       return _buildPartyVoteField(party);
                     }),
                     
                     const SizedBox(height: 16),
                     
-                    // Total Votes
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -102,10 +98,7 @@ class _PUVoteCountScreenState extends State<PUVoteCountScreen> {
                         children: [
                           const Text(
                             'Total Votes:',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                           ),
                           Text(
                             _calculateTotalVotes().toString(),
@@ -121,7 +114,6 @@ class _PUVoteCountScreenState extends State<PUVoteCountScreen> {
                     
                     const SizedBox(height: 24),
                     
-                    // Submit Button
                     CustomButton(
                       text: 'Submit Vote Count',
                       onPressed: _isSubmitting ? null : _submitVoteCount,
@@ -157,10 +149,7 @@ class _PUVoteCountScreenState extends State<PUVoteCountScreen> {
           Expanded(
             child: Text(
               party['name'],
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 16,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
             ),
           ),
           SizedBox(
@@ -197,11 +186,7 @@ class _PUVoteCountScreenState extends State<PUVoteCountScreen> {
                 color: AppColors.success.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.check_circle,
-                color: AppColors.success,
-                size: 48,
-              ),
+              child: const Icon(Icons.check_circle, color: AppColors.success, size: 48),
             ),
             const SizedBox(height: 24),
             Text(
@@ -228,17 +213,10 @@ class _PUVoteCountScreenState extends State<PUVoteCountScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          party['name'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        Text(party['name'], style: const TextStyle(fontWeight: FontWeight.w500)),
                         Text(
                           _partyControllers[party['name']]?.text ?? '0',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -272,7 +250,6 @@ class _PUVoteCountScreenState extends State<PUVoteCountScreen> {
       _isSubmitting = true;
     });
 
-    // Simulate API call
     Future.delayed(const Duration(seconds: 2), () {
       setState(() {
         _isSubmitting = false;

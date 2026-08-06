@@ -72,12 +72,7 @@ class PUUploadHistoryScreen extends StatelessWidget {
           ),
           child: Icon(icon, color: statusColor),
         ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
         subtitle: Text(date),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -88,16 +83,10 @@ class PUUploadHistoryScreen extends StatelessWidget {
           ),
           child: Text(
             status,
-            style: TextStyle(
-              color: statusColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ),
-        onTap: () {
-          // Show details
-        },
+        onTap: () {},
       ),
     );
   }
